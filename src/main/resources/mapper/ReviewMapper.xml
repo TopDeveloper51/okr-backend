@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.ReviewMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildReviewMap">
+        select * 
+        	,re_id as rpid
+        	,re_id as taskid
+        from tb_review
+        	<where>
+				<if test="re_id != null"> re_id like #{re_id} </if>
+				<if test="re_parent != null"> AND re_parent like #{re_parent} </if>
+				<if test="re_parent_type != null"> AND re_parent_type like #{re_parent_type} </if>
+				<if test="re_description != null"> AND re_description like #{re_description} </if>
+				<if test="re_problem != null"> AND re_problem like #{re_problem} </if>
+				<if test="re_collaborators != null"> AND re_collaborators like #{re_collaborators} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </select>
+    <resultMap id="ChildReviewMap" type="Review" >
+    	<collection property="re_problems" javaType="ArrayList" column="rpid" ofType="ReviewProblem" select="selectReviewProblemByReview"/>
+    	<collection property="re_tasks" javaType="ArrayList" column="taskid" ofType="Otask" select="selectTaskByReview"/>
+    </resultMap>
+    	<select id="selectReviewProblemByReview" resultType="ReviewProblem">
+	        select * 
+	        from tb_review_problem 
+	        	where rp_parent = #{rpid}
+	    </select>
+	    <select id="selectTaskByReview" resultType="Otask">
+	        select * 
+	        from tb_task 
+	        	where task_parent_review = #{taskid}
+	    </select>
+	    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="re_id">
+		<selectKey keyProperty="re_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_review
+        	<set>
+	        	<if test="re_id != null"> re_id = #{re_id}, </if>
+				<if test="re_parent != null"> re_parent = #{re_parent}, </if>
+				<if test="re_parent_type != null"> re_parent_type = #{re_parent_type}, </if>
+				<if test="re_description != null"> re_description = #{re_description}, </if>
+				<if test="re_problem != null"> re_problem = #{re_problem}, </if>
+				<if test="re_collaborators != null"> re_collaborators = #{re_collaborators} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_review 
+			<where>
+				<if test="re_id != null"> re_id like #{re_id} </if>
+				<if test="re_parent != null"> AND re_parent like #{re_parent} </if>
+				<if test="re_parent_type != null"> AND re_parent_type like #{re_parent_type} </if>
+				<if test="re_description != null"> AND re_description like #{re_description} </if>
+				<if test="re_problem != null"> AND re_problem like #{re_problem} </if>
+				<if test="re_collaborators != null"> AND re_collaborators like #{re_collaborators} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_review
+	       <set>
+				<if test="re_id != null"> re_id = #{re_id}, </if>
+				<if test="re_parent != null"> re_parent = #{re_parent}, </if>
+				<if test="re_parent_type != null"> re_parent_type = #{re_parent_type}, </if>
+				<if test="re_description != null"> re_description = #{re_description}, </if>
+				<if test="re_problem != null"> re_problem = #{re_problem}, </if>
+				<if test="re_collaborators != null"> re_collaborators = #{re_collaborators} </if>
+		   </set>
+       where re_id = #{re_id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.LikingMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Liking">
+        select * from tb_liking
+        	<where>
+				<if test="like_id != null"> like_id like #{like_id} </if>
+				<if test="like_parent_type != null"> AND like_parent_type like #{like_parent_type} </if>
+				<if test="like_parent != null"> AND like_parent like #{like_parent} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="like_id">
+		<selectKey keyProperty="like_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_liking
+        	<set>
+        		<if test="like_id != null"> like_id = #{like_id}, </if>
+				<if test="like_parent_type != null"> like_parent_type = #{like_parent_type}, </if>
+				<if test="like_parent != null"> like_parent = #{like_parent}, </if>				
+				<if test="like_tag != null"> like_tag = #{like_tag}, </if>
+				<if test="like_bonus != null"> like_bonus = #{like_bonus}, </if>
+				<if test="like_favor != null"> like_favor = #{like_favor}, </if>
+				<if test="like_thumb != null"> like_thumb = #{like_thumb} </if>
+		   </set>
+    </insert>
+
+    <delete id="deleteByFields">
+       delete from tb_liking 
+			<where>
+				<if test="like_id != null"> like_id like #{like_id} </if>
+				<if test="like_parent_type != null"> AND like_parent_type like #{like_parent_type} </if>
+				<if test="like_parent != null"> AND like_parent like #{like_parent} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_liking
+	       <set>
+				<if test="like_tag != null"> like_tag = #{like_tag}, </if>
+				<if test="like_bonus != null"> like_bonus = #{like_bonus}, </if>
+				<if test="like_favor != null"> like_favor = #{like_favor}, </if>
+				<if test="like_thumb != null"> like_thumb = #{like_thumb} </if>
+		   </set>
+       <where>
+			<if test="like_id != null"> like_id like #{like_id} </if>
+			<if test="like_parent_type != null"> AND like_parent_type like #{like_parent_type} </if>
+			<if test="like_parent != null"> AND like_parent like #{like_parent} </if>
+	  	</where>
+    </update>
+    
+</mapper>

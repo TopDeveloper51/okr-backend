@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.UserMapper">
+	
+    <select id="selectByFields" resultMap="userResultMap">
+    	select 
+    		tbuser.*
+    		,(
+				select sum(vs_counts)
+				from tb_visit
+				where vs_target = tbuser.id and vs_target_type=10
+			) as user_visit_counts
+    		, group_concat(tb_department.id) as leader_dps
+    		
+    		,CONCAT('%,',tbuser.id,',%') as uid
+			, tbuser.id as vid
+    	from (select tb_user.*, CONCAT(dp_serial_id,'.',tb_department.id) as user_dp_serial, departmentOaName
+        from tb_user
+        left join tb_department on deptId like tb_department.id
+			<where>
+				<if test="id != null"> tb_user.id like #{id} </if>
+				<if test="employeeName != null"> AND employeeName like #{employeeName} </if>
+				<if test="loginName != null"> AND loginName like #{loginName} </if>
+				<if test="email != null"> AND email like #{email} </if>
+				<if test="phone != null"> AND phone like #{phone} </if>
+				<if test="user_password != null"> AND user_password like #{user_password} </if>
+				<if test="user_avatar_url != null"> AND user_avatar_url like #{user_avatar_url} </if>
+				<if test="user_role != null"> AND user_role like #{user_role} </if>
+				<if test="user_company_name != null"> AND user_company_name like #{user_company_name} </if>
+				<if test="deptId != null"> AND deptId like #{deptId} </if>
+				<if test="user_dot_superior != null"> AND user_dot_superior like #{user_dot_superior} </if>
+				<if test="user_attentions != null"> AND user_attentions like #{user_attentions} </if>
+				<if test="user_recent_items != null"> AND user_recent_items like #{user_recent_items} </if>
+				<if test="user_superior != null"> AND user_superior like #{user_superior} </if>
+				<if test="user_company_id != null"> AND user_company_id like #{user_company_id} </if>
+				<if test="user_post_address != null">AND user_post_address like #{user_post_address} </if>
+				<if test="status != null"> AND tb_user.status like #{status} </if>
+				<if test="user_dp_serial != null"> AND CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{user_dp_serial} </if>
+		  	</where>
+		  ) as tbuser
+		    left join tb_department on CONCAT(',',dp_leader,',') regexp CONCAT(',',tbuser.id,',')
+			group by tbuser.id
+    </select>
+    <resultMap id="userResultMap" type="User">
+		<result property="postNameStr" column="postName"/>
+		<collection property="user_be_attentions" javaType="ArrayList" column="uid" ofType="User" select="selectAttentionedUser"/>
+		<collection property="user_visitors" javaType="ArrayList" column="vid" ofType="User" select="selectVisitUser"/>
+	</resultMap>
+    	<select id="selectAttentionedUser" resultType="User">
+	        select id, employeeName
+	        from tb_user
+	        where CONCAT(',',user_attentions,',') like #{uid}
+    	</select>
+    	
+    	<select id="selectVisitUser" resultType="User">
+	        select tb_user.id, tb_user.employeeName, vs_counts as user_visit_counts, tb_visit.created_at
+			from tb_visit
+			left join tb_user on tb_user.id = vs_visitor
+			where vs_target like #{vid} and vs_target_type =10
+    	</select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_user
+	        <set>
+		        <if test="id != null"> id = #{id}, </if>
+				<if test="employeeName != null"> employeeName = #{employeeName}, </if>
+				<if test="postNameStr != null"> postName = #{postNameStr}, </if>
+				<if test="loginName != null"> loginName = #{loginName}, </if>
+				<if test="email != null"> email = #{email}, </if>
+				<if test="phone != null"> phone = #{phone}, </if>
+				<if test="user_password != null"> user_password = #{user_password}, </if>
+				<if test="user_avatar_url != null"> user_avatar_url = #{user_avatar_url}, </if>
+				<if test="user_role != null"> user_role = #{user_role}, </if>
+				<if test="user_company_name != null"> user_company_name = #{user_company_name}, </if>
+				<if test="deptId != null"> deptId = #{deptId}, </if>
+				<if test="user_superior != null"> user_superior = #{user_superior}, </if>
+				<if test="user_dot_superior != null"> user_dot_superior = #{user_dot_superior}, </if>
+				<if test="user_attentions != null"> user_attentions = #{user_attentions}, </if>
+				<if test="user_recent_items != null"> user_recent_items = #{user_recent_items}, </if>
+				<if test="user_company_id != null"> user_company_id = #{user_company_id}, </if>
+				<if test="user_post_address != null"> user_post_address = #{user_post_address}, </if>
+				<if test="status != null"> status = #{status} </if>
+	        </set>
+        <selectKey keyColumn="id" keyProperty="id" order="AFTER" resultType="long">
+	      select last_insert_id()
+	    </selectKey>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_user 
+       		<where>
+				<if test="id != null"> id like #{id} </if>
+				<if test="employeeName != null"> AND employeeName like #{employeeName} </if>
+				<if test="email != null"> AND email like #{email} </if>
+				<if test="phone != null"> AND phone like #{phone} </if>
+				<if test="user_password != null"> AND user_password like #{user_password} </if>
+				<if test="user_avatar_url != null"> AND user_avatar_url like #{user_avatar_url} </if>
+				<if test="user_role != null"> AND user_role like #{user_role} </if>
+				<if test="user_company_name != null"> AND user_company_name like #{user_company_name} </if>
+				<if test="deptId != null"> AND deptId like #{deptId} </if>
+				<if test="user_dot_superior != null"> AND user_dot_superior like #{user_dot_superior} </if>
+				<if test="user_attentions != null"> AND user_attentions like #{user_attentions} </if>
+				<if test="user_superior != null"> AND user_superior like #{user_superior} </if>
+				<if test="user_company_id != null"> AND user_company_id like #{user_company_id} </if>
+				<if test="status != null"> AND status like #{status} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_user 
+		<set>
+			<if test="employeeName != null"> employeeName = #{employeeName}, </if>
+			<if test="postNameStr != null"> postName = #{postNameStr}, </if>
+			<if test="loginName != null"> loginName = #{loginName}, </if>
+			<if test="email != null"> email = #{email}, </if>
+			<if test="phone != null"> phone = #{phone}, </if>
+			<if test="user_password != null"> user_password = #{user_password}, </if>
+			<if test="user_avatar_url != null"> user_avatar_url = #{user_avatar_url}, </if>
+			<if test="user_role != null"> user_role = #{user_role}, </if>
+			<if test="user_company_name != null"> user_company_name = #{user_company_name}, </if>
+			<if test="deptId != null"> deptId = #{deptId}, </if>
+			<if test="user_dot_superior != null">  user_dot_superior = #{user_dot_superior}, </if>
+			<if test="user_attentions != null">  user_attentions = #{user_attentions}, </if>
+			<if test="user_recent_items != null"> user_recent_items = #{user_recent_items}, </if>
+			<if test="user_superior != null">  user_superior = #{user_superior}, </if>
+			<if test="user_company_id != null"> user_company_id = #{user_company_id}, </if>
+			<if test="user_post_address != null"> user_post_address = #{user_post_address}, </if>
+			<if test="status != null">  status = #{status} </if>
+		</set>	
+	
+		<choose>
+			<when test="id != null">
+		   		where id = #{id}
+			</when>
+		   	<otherwise>
+		   		where id in
+		   		<foreach item="item" index="index" collection="ids.split(',')" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+		   	</otherwise>
+		</choose>
+    
+    </update>
+    
+</mapper>

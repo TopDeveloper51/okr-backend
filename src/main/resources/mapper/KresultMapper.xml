@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.KresultMapper">
+    
+    <!--查询所有-->
+    <select id="getDetailedKr" resultMap="ParentKrResultMap">
+        select *
+        	,kr_owner as owner_id  
+			,(
+				select pr_status
+				from tb_progress
+				where kr_id = pr_parent and pr_parent_type =1 and pr_status is not Null
+				order by tb_progress.created_at DESC
+				limit 1
+			)as kr_completion_status
+        from tb_kr
+        	<where>
+			<if test="kr_id != null"> kr_id like #{kr_id} </if>
+			<if test="kr_name != null"> AND kr_name like #{kr_name} </if>
+			<if test="kr_owner != null"> AND kr_owner like #{kr_owner} </if>
+			<if test="kr_parent_object != null"> AND kr_parent_object like #{kr_parent_object} </if>
+			<if test="kr_completion != null"> AND kr_completion like #{kr_completion} </if>
+			<if test="kr_confidence != null"> AND kr_confidence like #{kr_confidence} </if>
+			<if test="kr_score != null"> AND kr_score like #{kr_score} </if>
+			<if test="kr_order != null"> AND kr_order like #{kr_order} </if>
+			<if test="kr_score_description != null"> AND kr_score_description like #{kr_score_description} </if>
+			<if test="kr_ta != null"> AND kr_ta like #{kr_ta} </if>
+			<if test="kr_start_date != null"> AND kr_start_date like #{kr_start_date} </if>
+			<if test="kr_end_date != null"> AND kr_end_date like #{kr_end_date} </if>
+		</where>
+    </select>
+   	<resultMap id="ParentKrResultMap" type="com.apis.okre.entity.Kresult" >
+    	<collection property="kr_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+    </resultMap>
+    	<select id="selectOwnerUser" resultType="com.apis.okre.entity.User">
+	        select employeeName,deptId,user_company_id from tb_user 
+	        	where id = #{owner_id}
+	    </select>
+	    
+    <insert id="addKresult" useGeneratedKeys="true" keyProperty="kr_id">
+		<selectKey keyProperty="kr_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_kr
+        	<set>
+        		<if test="kr_id != null"> kr_id = #{kr_id}, </if>
+				<if test="kr_name != null"> kr_name = #{kr_name}, </if>
+				<if test="kr_owner != null"> kr_owner = #{kr_owner}, </if>
+				<if test="kr_parent_object != null"> kr_parent_object = #{kr_parent_object}, </if>
+				<if test="kr_completion != null"> kr_completion = #{kr_completion}, </if>
+				<if test="kr_confidence != null"> kr_confidence = #{kr_confidence}, </if>
+				<if test="kr_score != null"> kr_score = #{kr_score}, </if>
+				<if test="kr_order != null"> kr_order = #{kr_order}, </if>
+				<if test="kr_score_description != null"> kr_score_description = #{kr_score_description}, </if>
+				<if test="kr_ta != null"> kr_ta = #{kr_ta}, </if>
+				<if test="kr_rate != null"> kr_rate = #{kr_rate}, </if>
+				<if test="kr_description != null"> kr_description = #{kr_description}, </if>
+				<if test="kr_start_date != null"> kr_start_date = #{kr_start_date}, </if>
+				<if test="kr_end_date != null"> kr_end_date = #{kr_end_date} </if>
+        	</set> 
+    </insert>
+    
+    <delete id="deleteKresultById">
+       delete from tb_kr where kr_id =#{id}
+    </delete>
+    
+    <delete id="deleteKresultByParentObject">
+          <if test="kr_id != null">
+		    	UPDATE tb_kr,(select kr_order as krorder,kr_parent_object as krp
+				from tb_kr as tbkr
+				where kr_id = #{kr_id})as test
+				SET kr_order = kr_order - 1
+				where kr_parent_object = test.krp AND kr_order>test.krorder;
+		  </if>
+		  
+       delete from tb_kr 
+		<where>
+			<if test="kr_id != null"> kr_id like #{kr_id} </if>
+			<if test="kr_name != null"> AND kr_name like #{kr_name} </if>
+			<if test="kr_owner != null"> AND kr_owner like #{kr_owner} </if>
+			<if test="kr_parent_object != null"> AND kr_parent_object like #{kr_parent_object} </if>
+			<if test="kr_completion != null"> AND kr_completion like #{kr_completion} </if>
+			<if test="kr_confidence != null"> AND kr_confidence like #{kr_confidence} </if>
+			<if test="kr_score != null"> AND kr_score like #{kr_score} </if>
+			<if test="kr_order != null"> AND kr_order like #{kr_order} </if>
+			<if test="kr_score_description != null"> AND kr_score_description like #{kr_score_description} </if>
+			<if test="kr_ta != null"> AND kr_ta like #{kr_ta} </if>			
+			<if test="kr_start_date != null"> AND kr_start_date like #{kr_start_date} </if>
+			<if test="kr_end_date != null"> AND kr_end_date like #{kr_end_date} </if>
+		</where>
+    </delete>
+    
+    <update id="updateKrByField">
+       update tb_kr
+	       <set>
+				<if test="kr_name != null"> kr_name = #{kr_name}, </if>
+				<if test="kr_owner != null"> kr_owner = #{kr_owner}, </if>
+				<if test="kr_parent_object != null"> kr_parent_object = #{kr_parent_object}, </if>
+				<if test="kr_completion != null"> kr_completion = #{kr_completion}, </if>
+				<if test="kr_confidence != null"> kr_confidence = #{kr_confidence}, </if>
+				<if test="kr_score != null"> kr_score = #{kr_score}, </if>
+				<if test="kr_order != null"> kr_order = #{kr_order}, </if>
+				<if test="kr_score_description != null"> kr_score_description = #{kr_score_description}, </if>
+				<if test="kr_ta != null"> 
+					<if test="kr_ta != 0">
+						kr_ta = #{kr_ta},
+					</if>
+					<if test="kr_ta == 0">
+						kr_ta = NULL,
+					</if>  
+				</if>
+				<if test="kr_start_date != null"> kr_start_date = #{kr_start_date}, </if>
+				<if test="kr_description != null"> kr_description = #{kr_description}, </if>
+				<if test="kr_rate != null"> kr_rate = #{kr_rate}, </if>
+				<if test="kr_end_date != null"> kr_end_date = #{kr_end_date} </if>
+		   </set>
+       where kr_id = #{kr_id}
+    </update>
+    
+</mapper>

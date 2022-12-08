@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.OperatingMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Operating">
+        select tb_operating.* , employeeName as op_operator_name
+        from tb_operating
+        left join tb_user on id = op_operator
+        
+        	<where>
+				<if test="op_id != null"> op_id like #{op_id} </if>
+				<if test="op_operator != null"> AND op_operator like #{op_operator} </if>
+				<if test="op_description != null"> AND op_description like #{op_description} </if>
+				<if test="op_parent_type != null"> AND op_parent_type like #{op_parent_type} </if>
+				<if test="op_parent != null"> AND op_parent like #{op_parent} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+		 order by created_at DESC
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="op_id">
+		<selectKey keyProperty="op_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_operating
+        	<set>
+        		<if test="op_id != null"> op_id = #{op_id}, </if>
+				<if test="op_operator != null"> op_operator = #{op_operator}, </if>
+				<if test="op_description != null"> op_description = #{op_description}, </if>
+				<if test="op_parent_type != null"> op_parent_type = #{op_parent_type}, </if>
+				<if test="op_parent != null"> op_parent = #{op_parent} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_operating 
+			<where>
+				<if test="op_id != null"> op_id like #{op_id} </if>
+				<if test="op_operator != null"> AND op_operator like #{op_operator} </if>
+				<if test="op_description != null"> AND op_description like #{op_description} </if>
+				<if test="op_parent_type != null"> AND op_parent_type like #{op_parent_type} </if>
+				<if test="op_parent != null"> AND op_parent like #{op_parent} </if>
+		  	</where>
+    </delete>
+    
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.ReviewProblemMapper">
+	    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="rp_id">
+		<selectKey keyProperty="rp_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_review_problem 
+        	<set>
+	        	<if test="rp_id != null"> rp_id = #{rp_id}, </if>
+				<if test="rp_parent != null"> rp_parent = #{rp_parent}, </if>
+				<if test="rp_problem != null"> rp_problem = #{rp_problem}, </if>
+				<if test="rp_reason != null"> rp_reason = #{rp_reason}, </if>
+				<if test="rp_solution != null"> rp_solution = #{rp_solution} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_review_problem 
+			<where>
+				<if test="rp_id != null"> rp_id like #{rp_id} </if>
+				<if test="rp_parent != null"> AND rp_parent like #{rp_parent} </if>
+				<if test="rp_problem != null"> AND rp_problem like #{rp_problem} </if>
+				<if test="rp_reason != null"> AND rp_reason like #{rp_reason} </if>
+				<if test="rp_solution != null"> AND rp_solution like #{rp_solution} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_review_problem
+	       <set>
+				<if test="rp_parent != null"> rp_parent = #{rp_parent}, </if>
+				<if test="rp_problem != null"> rp_problem = #{rp_problem}, </if>
+				<if test="rp_reason != null"> rp_reason = #{rp_reason}, </if>
+				<if test="rp_solution != null"> rp_solution = #{rp_solution} </if>
+		   </set>
+       where rp_id = #{rp_id}
+    </update>
+    
+</mapper>

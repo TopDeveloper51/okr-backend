@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.ReportMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildFilesResultMap">
+        select * 
+		,CONCAT(',',rp_attatch_files,',') as fid 
+		from tb_report
+        	<where>
+				<if test="rp_id != null"> rp_id like #{rp_id} </if>
+				<if test="rp_date != null"> AND rp_date like #{rp_date} </if>
+				<if test="rp_type != null"> AND rp_type like #{rp_type} </if>
+				<if test="rp_abstract != null"> AND rp_abstract like #{rp_abstract} </if>
+				<if test="rp_todo != null"> AND rp_todo like #{rp_todo} </if>
+				<if test="rp_attatch_files != null"> AND rp_attatch_files like #{rp_attatch_files} </if>
+				<if test="rp_visible_range != null"> AND rp_visible_range like #{rp_visible_range} </if>
+				<if test="rp_ta_contacts != null"> AND rp_ta_contacts like #{rp_ta_contacts} </if>
+				<if test="rp_send_check != null"> AND rp_send_check like #{rp_send_check} </if>
+				<if test="rp_publish_type != null"> AND rp_publish_type like #{rp_publish_type} </if>
+				<if test="rp_creator != null"> AND rp_creator like #{rp_creator} </if>
+				<if test="rp_tag != null"> AND rp_tag like #{rp_tag} </if>
+		  	</where>
+    </select>
+	<resultMap id="ChildFilesResultMap" type="Report" >
+    	<collection property="rp_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFileByReport"/>
+    </resultMap>
+    	<select id="selectFileByReport" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fid} like CONCAT('%,',file_id,',%')
+    	</select>
+
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="rp_id">
+		<selectKey keyProperty="rp_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_report
+        	<set>
+        		<if test="rp_id != null"> rp_id = #{rp_id}, </if>
+				<if test="rp_date != null"> rp_date = #{rp_date}, </if>
+				<if test="rp_type != null"> rp_type = #{rp_type}, </if>
+				<if test="rp_abstract != null"> rp_abstract = #{rp_abstract}, </if>
+				<if test="rp_todo != null"> rp_todo = #{rp_todo}, </if>
+				<if test="rp_attatch_files != null"> rp_attatch_files = #{rp_attatch_files}, </if>
+				<if test="rp_visible_range != null"> rp_visible_range = #{rp_visible_range}, </if>
+				<if test="rp_ta_contacts != null"> rp_ta_contacts = #{rp_ta_contacts}, </if>
+				<if test="rp_send_check != null"> rp_send_check = #{rp_send_check}, </if>
+				<if test="rp_publish_type != null"> rp_publish_type = #{rp_publish_type}, </if>
+				<if test="rp_creator != null"> rp_creator = #{rp_creator}, </if>
+				<if test="rp_progress_tasks != null"> rp_progress_tasks = #{rp_progress_tasks}, </if>
+				<if test="rp_expired_tasks != null"> rp_expired_tasks = #{rp_expired_tasks}, </if>
+				<if test="rp_completed_tasks != null"> rp_completed_tasks = #{rp_completed_tasks}, </if>
+				<if test="rp_tag != null"> rp_tag = #{rp_tag} </if>
+		   </set>
+    </insert>
+    
+    
+
+
+    
+    <delete id="deleteByFields">
+       delete from tb_report
+       where  rp_id like #{rp_id}
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_report
+	       <set>
+				<if test="rp_date != null"> rp_date = #{rp_date}, </if>
+				<if test="rp_type != null"> rp_type = #{rp_type}, </if>
+				<if test="rp_abstract != null"> rp_abstract = #{rp_abstract}, </if>
+				<if test="rp_todo != null"> rp_todo = #{rp_todo}, </if>
+				<if test="rp_attatch_files != null"> rp_attatch_files = #{rp_attatch_files}, </if>
+				<if test="rp_visible_range != null"> rp_visible_range = #{rp_visible_range}, </if>
+				<if test="rp_ta_contacts != null"> rp_ta_contacts = #{rp_ta_contacts}, </if>
+				<if test="rp_send_check != null"> rp_send_check = #{rp_send_check}, </if>
+				<if test="rp_publish_type != null"> rp_publish_type = #{rp_publish_type}, </if>
+				<if test="rp_creator != null"> rp_creator = #{rp_creator}, </if>
+				<if test="rp_progress_tasks != null"> rp_progress_tasks = #{rp_progress_tasks}, </if>
+				<if test="rp_expired_tasks != null"> rp_expired_tasks = #{rp_expired_tasks}, </if>
+				<if test="rp_completed_tasks != null"> rp_completed_tasks = #{rp_completed_tasks}, </if>
+				<if test="rp_tag != null"> rp_tag = #{rp_tag} </if>
+		   </set>
+       where rp_id = #{rp_id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.KanbanMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildTaskResultMap">
+    	<if test="kb_parent_item != null"> 
+			<bind name="pattern" value="'rest' + kb_parent_item" />
+		</if>
+		
+        select * 
+        	,CONCAT(',',kb_task,',') as tid
+        from tb_kanban	
+        	<where>
+				<if test="kb_id != null">  kb_id like #{kb_id} </if>
+				<if test="kb_name != null"> AND kb_name like #{kb_name} </if>
+				<if test="kb_order != null"> AND kb_order like #{kb_order} </if>
+				<if test="kb_parent_item != null"> AND kb_parent_item like #{kb_parent_item} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+		<if test="kb_parent_item != null"> 
+			union all
+			
+			select 0,'',0,#{kb_parent_item},'','2000-01-01 00:00:00',#{pattern}
+		</if>
+		  	order by kb_order,kb_id ASC
+    </select>
+    <resultMap id="ChildTaskResultMap" type="Kanban" >
+    	<collection property="kb_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByKb"/>
+    </resultMap>
+    	<select id="selectTaskByKb" resultType="Otask">
+	        <if test="tid.contains('rest')"> 
+				<bind name="pattern" value="tid.substring(4)" />
+				select tbtask.*
+	    		, CONCAT(sum(if(tb_subtask.task_status=1,1,0)),'/',count(tb_subtask.task_id)) as task_subtask_status 
+				from (
+				select * 
+				from(
+				select tbtask.*, count(kb_id) as cnt
+				from (
+				select *
+				from tb_task
+				where task_parent_item like #{pattern}
+				)as tbtask
+				left join tb_kanban on kb_parent_item like #{pattern} and CONCAT(',',kb_task,',') like CONCAT('%,',task_id,',%')
+				group by task_id
+				) as tbtask
+				where cnt = 0
+				) as tbtask
+				left join tb_task as tb_subtask on tbtask.task_id = tb_subtask.task_parent_task
+				group by tbtask.task_id
+			</if>
+			<if test="!tid.contains('rest')"> 
+				select tbtask.*
+					, CONCAT(sum(if(tb_subtask.task_status=1,1,0)),'/',count(tb_subtask.task_id)) as task_subtask_status 
+				from (
+					select *
+					from tb_task 
+						where #{tid} like CONCAT('%,',task_id,',%')
+						
+				) as tbtask
+				left join tb_task as tb_subtask on tbtask.task_id = tb_subtask.task_parent_task
+				group by tbtask.task_id
+				<if test="tid.length()>2">
+					ORDER BY FIELD (tbtask.task_id,
+						<foreach item="item" index="index" collection="tid.substring(1).split(',')"
+							open="" separator="," close="">
+								#{item}
+						</foreach>
+					) 
+				</if>
+			</if>
+    	</select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="kb_id">
+		<selectKey keyProperty="kb_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_kanban (kb_id, kb_name, kb_parent_item, kb_order)
+         select  #{kb_id}, #{kb_name}, #{kb_parent_item}, count(*)+1 
+         	from tb_kanban where kb_parent_item= #{kb_parent_item}
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_kanban 
+			<where>
+				<if test="kb_id != null"> kb_id like #{kb_id} </if>
+				<if test="kb_name != null"> AND kb_name like #{kb_name} </if>
+				<if test="kb_order != null"> AND kb_order like #{kb_order} </if>
+				<if test="kb_parent_item != null"> AND kb_parent_item like #{kb_parent_item} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+    	<if test="kb_id != null">
+    		<if test="kb_order != null">
+    			update tb_kanban
+				set kb_order = kb_order-1
+				where kb_order>#{kb_old_order} and kb_parent_item=#{kb_parent_item};
+				
+				update tb_kanban
+				set kb_order = kb_order+1
+				where kb_order>=#{kb_order} and kb_parent_item=#{kb_parent_item};
+				
+				update tb_kanban
+				set kb_order = #{kb_order}
+				where kb_id=#{kb_id};
+    		</if>
+    		<if test="kb_order == null">
+    			update tb_kanban
+			       <set>
+						<if test="kb_name != null"> kb_name = #{kb_name}, </if>
+						<if test="kb_task != null"> kb_task = #{kb_task}, </if>
+						<if test="kb_parent_item != null"> kb_parent_item = #{kb_parent_item}</if>
+				   </set>
+			   	where kb_id = #{kb_id}
+    		</if>
+	   </if>
+	   
+	   <if test="kb_id == null">
+	   		update tb_kanban
+	   		<set>
+				<if test="kb_order != null"> kb_order = kb_order-1 </if>
+		    </set>
+	   		where kb_order>#{kb_order} and kb_parent_item=#{kb_parent_item}
+	   </if>
+	   
+    </update>
+    
+</mapper>

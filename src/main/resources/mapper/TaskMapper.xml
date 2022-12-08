@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.TaskMapper">
+    
+    <!--查询所有-->
+   	<resultMap id="ParentTaskTaskResultMap" type="Otask" >
+    	<collection property="task_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByTask"/>
+    	<collection property="task_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFile"/>
+    	<collection property="task_worktimes" javaType="ArrayList" column="wid" ofType="Worktime" select="selectWorktime"/>
+    	<collection property="task_progresses" javaType="ArrayList" column="pid" ofType="Tprogress" select="selectProgress"/>
+    </resultMap>
+    	<select id="selectTaskByTask" resultMap="ParentTaskTaskResultMap">
+	        select tb_task.*
+	        	, employeeName as task_owner_name
+	        	,task_id as tid
+	        from tb_task
+	        	left join tb_user on id = task_owner
+	        where task_parent_task = #{tid}
+    	</select>
+    	<select id="selectFile" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fid} like CONCAT('%,',file_id,',%')
+    	</select>
+    	<select id="selectWorktime" resultType="Worktime">
+	        select *
+	        from tb_worktime
+	        where  #{wid} like wt_parent_task 
+    	</select>
+    	<select id="selectProgress" resultType="Tprogress">
+	        select *
+	        from tb_progress
+	        where pr_parent like #{pid} and pr_parent_type=2 and pr_start_date is not Null 
+    	</select>
+    	
+    <select id="selectByFields" resultMap="ParentTaskTaskResultMap">
+    	select tbtask.*
+    		, CONCAT(sum(if(tb_subtask.task_status=1,1,0)),'/',count(tb_subtask.task_id)) as task_subtask_status 
+    	from (
+        select tb_task.*
+			, ob_name as task_parent_object_name
+			, item_name as task_parent_item_name
+			, employeeName as task_owner_name
+        	, task_id as tid  
+        	, task_id as wid
+        	, task_id as pid
+        	, CONCAT(',',task_uploaded_files,',') as fid
+        from tb_task
+			left join tb_object on ob_id = task_parent_object
+			left join tb_item on item_id = task_parent_item
+			left join tb_user on id = task_owner
+        	<where>
+        		(	
+        			task_visible_type = 0
+        			or task_owner like #{operator.id}
+        			or task_creator like #{operator.id}
+        			or CONCAT(',',task_collaborator,',') regexp CONCAT(',',#{operator.id},',')
+        			or CONCAT(',',task_vice_leader,',') regexp CONCAT(',',#{operator.id},',')
+        			or #{operator.user_role} like 'creator'
+        		)
+				<if test="task_id != null"> AND task_id like #{task_id} </if>
+				<if test="task_name != null"> AND task_name like #{task_name} </if>
+				<if test="task_priority != null"> AND task_priority like #{task_priority} </if>
+				<if test="task_description != null"> AND task_description like #{task_description} </if>
+				<if test="task_target_price != null"> AND task_target_price like #{task_target_price} </if>
+				<if test="task_unit != null"> AND task_unit like #{task_unit} </if>
+				<if test="task_real_price != null"> AND task_real_price like #{task_real_price} </if>
+				<if test="task_feedback_time != null"> AND task_feedback_time like #{task_feedback_time} </if>
+				<if test="task_est_worktime != null"> AND task_est_worktime like #{task_est_worktime} </if>
+				
+				<if test="task_approver != null"> AND task_approver like #{task_approver} </if>
+				<if test="task_start_date != null">
+					<if test="task_end_date != null">
+						<choose>
+							<when test="task_start_date == 'null'">
+								<if test="task_end_date == 'null'">
+									AND task_start_date is NULL AND task_end_date is NULL
+								</if>
+							</when>
+							<otherwise>
+								AND NOT( 
+									#{task_start_date} > DATE(task_end_date)
+										OR
+									DATE(task_start_date) > #{task_end_date}  
+								)
+							</otherwise>
+						</choose>
+					</if>
+				</if>
+				<if test="task_owner != null || task_collaborator != null || task_vice_leader != null">
+					AND (
+						<trim prefix="" prefixOverrides="OR">
+							<if test="task_owner != null"> task_owner like #{task_owner} </if>
+							<if test="task_collaborator != null"> OR task_collaborator like #{task_collaborator} </if>
+							<if test="task_vice_leader != null"> OR task_creator like #{task_vice_leader} </if>  
+							<if test="task_vice_leader != null"> AND task_owner NOT like #{task_vice_leader} </if>  
+						</trim>
+					)
+				</if>
+				<if test="task_parent_object != null"> AND task_parent_object like #{task_parent_object} </if>
+				<if test="task_parent_kr != null"> AND task_parent_kr like #{task_parent_kr} </if>
+				<if test="task_parent_item != null"> AND task_parent_item like #{task_parent_item} </if>
+				<if test="task_parent_task != null"> AND task_parent_task like #{task_parent_task} </if>
+				<if test="task_refer != null"> AND task_refer like #{task_refer} </if>
+				<if test="task_visible_type != null"> AND task_visible_type like #{task_visible_type} </if>
+				<if test="task_visible_range != null"> AND task_visible_range like #{task_visible_range} </if>
+				<if test="task_uploaded_files != null"> AND task_uploaded_files like #{task_uploaded_files} </if>
+				<if test="task_milestone != null"> AND task_milestone like #{task_milestone} </if>
+				<if test="task_parent_review != null">AND task_parent_review like #{task_parent_review} </if>
+				<if test="task_kanban != null"> AND task_kanban like #{task_kanban} </if>
+				<if test="task_order != null"> AND task_order like #{task_order} </if>
+				
+				<if test="task_status != null">AND task_status in
+				  <foreach item="item" index="index" collection="task_status.split(',')"
+				      open="(" separator="," close=")">
+				        #{item}
+				  </foreach>
+				  AND task_parent_task is NULL
+				</if>
+				
+				<if test="task_owners != null"> AND task_owner in
+				  <foreach item="item" index="index" collection="task_owners.split(',')"
+				      open="(" separator="," close=")">
+				        #{item}
+				  </foreach>
+				</if>
+				
+		  	</where>
+	  	) as tbtask
+	  	left join tb_task as tb_subtask on tbtask.task_id = tb_subtask.task_parent_task
+	  	group by tbtask.task_id
+	  	<if test="task_sortby != null">
+	  		<if test="task_sortby.contains('task_id')">
+			  	order by task_id DESC
+		  	</if>
+		  	<if test="task_sortby.contains('task_start_date')">
+		  		<choose>
+		  			<when test="task_sortby.contains('ASC')">
+		  				order by task_start_date ASC 	
+			  		</when>
+			  		<when test="task_sortby.contains('DESC')">
+			  			order by task_start_date DESC 
+			  		</when>
+			  		<otherwise>
+			  			order by task_start_date DESC
+			  		</otherwise>
+		  		</choose>
+		  	</if>
+		  	
+		  	<if test="task_sortby.contains('task_end_date')">
+		  		<choose>
+		  			<when test="task_sortby.contains('ASC')">
+		  				order by task_end_date ASC 	
+			  		</when>
+			  		<when test="task_sortby.contains('DESC')">
+			  			order by task_end_date DESC 
+			  		</when>
+			  		<otherwise>
+			  			order by task_end_date DESC
+			  		</otherwise>
+		  		</choose>
+		  	</if>
+		  	<if test="task_sortby.contains('created_at')">
+		  		<choose>
+		  			<when test="task_sortby.contains('ASC')">
+		  				order by created_at ASC 	
+			  		</when>
+			  		<when test="task_sortby.contains('DESC')">
+			  			order by created_at DESC 
+			  		</when>
+			  		<otherwise>
+			  			order by created_at DESC
+			  		</otherwise>
+		  		</choose>
+		  	</if>
+		  	
+		  	<if test="task_sortby.contains('task_priority')">
+	  			order by task_priority ASC
+		  	</if>
+	  	</if>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="task_id">
+		<selectKey keyProperty="task_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_task 
+        	<set>
+        		<if test="task_id != null"> task_id = #{task_id}, </if>
+				<if test="task_name != null"> task_name = #{task_name}, </if>
+				<if test="task_status != null"> task_status = #{task_status}, </if>
+				<if test="task_start_date != null"> task_start_date = #{task_start_date}, </if>
+				<if test="task_end_date != null"> task_end_date = #{task_end_date}, </if>
+				<if test="task_priority != null"> task_priority = #{task_priority}, </if>
+				<if test="task_description != null"> task_description = #{task_description}, </if>
+				<if test="task_target_price != null"> task_target_price = #{task_target_price}, </if>
+				<if test="task_unit != null"> task_unit = #{task_unit}, </if>
+				<if test="task_real_price != null"> task_real_price = #{task_real_price}, </if>
+				<if test="task_feedback_time != null"> task_feedback_time = #{task_feedback_time}, </if>
+				<if test="task_est_worktime != null"> task_est_worktime = #{task_est_worktime}, </if>
+				<if test="task_creator != null"> task_creator = #{task_creator}, </if>
+				<if test="task_owner != null"> task_owner = #{task_owner}, </if>
+				<if test="task_approver != null"> task_approver = #{task_approver}, </if>
+				<if test="task_collaborator != null"> task_collaborator = #{task_collaborator}, </if>
+				<if test="task_parent_object != null"> task_parent_object = #{task_parent_object}, </if>
+				<if test="task_parent_kr != null"> task_parent_kr = #{task_parent_kr}, </if>
+				<if test="task_parent_item != null"> task_parent_item = #{task_parent_item}, </if>
+				<if test="task_parent_review != null"> task_parent_review = #{task_parent_review}, </if>
+				<if test="task_parent_task != null"> task_parent_task = #{task_parent_task}, </if>
+				<if test="task_refer != null"> task_refer = #{task_refer}, </if>
+				<if test="task_visible_type != null"> task_visible_type = #{task_visible_type}, </if>
+				<if test="task_visible_range != null"> task_visible_range = #{task_visible_range}, </if>
+				<if test="task_uploaded_files != null"> task_uploaded_files = #{task_uploaded_files}, </if>
+				<if test="task_milestone != null"> task_milestone = #{task_milestone}, </if>
+				<if test="task_kanban != null"> task_kanban = #{task_kanban}, </if>
+				<if test="task_vice_leader != null"> task_vice_leader = #{task_vice_leader}, </if>
+				<if test="task_order != null"> task_order = #{task_order} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_task 
+			<where>
+				<if test="task_id != null"> task_id like #{task_id} </if>
+				<if test="task_name != null"> AND task_name like #{task_name} </if>
+				<if test="task_status != null"> AND task_status like #{task_status} </if>
+				<if test="task_start_date != null"> AND task_start_date like #{task_start_date} </if>
+				<if test="task_end_date != null"> AND task_end_date like #{task_end_date} </if>
+				<if test="task_priority != null"> AND task_priority like #{task_priority} </if>
+				<if test="task_description != null"> AND task_description like #{task_description} </if>
+				<if test="task_target_price != null"> AND task_target_price like #{task_target_price} </if>
+				<if test="task_unit != null"> AND task_unit like #{task_unit} </if>
+				<if test="task_real_price != null"> AND task_real_price like #{task_real_price} </if>
+				<if test="task_feedback_time != null"> AND task_feedback_time like #{task_feedback_time} </if>
+				<if test="task_est_worktime != null"> AND task_est_worktime like #{task_est_worktime} </if>
+				<if test="task_creator != null"> AND task_creator like #{task_creator} </if>
+				<if test="task_owner != null"> AND task_owner like #{task_owner} </if>
+				<if test="task_approver != null"> AND task_approver like #{task_approver} </if>
+				<if test="task_collaborator != null"> AND task_collaborator like #{task_collaborator} </if>
+				<if test="task_parent_object != null"> AND task_parent_object like #{task_parent_object} </if>
+				<if test="task_parent_kr != null"> AND task_parent_kr like #{task_parent_kr} </if>
+				<if test="task_parent_item != null"> AND task_parent_item like #{task_parent_item} </if>
+				<if test="task_parent_task != null"> AND task_parent_task like #{task_parent_task} </if>
+				<if test="task_refer != null"> AND task_refer like #{task_refer} </if>
+				<if test="task_visible_type != null"> AND task_visible_type like #{task_visible_type} </if>
+				<if test="task_visible_range != null"> AND task_visible_range like #{task_visible_range} </if>
+				<if test="task_uploaded_files != null"> AND task_uploaded_files like #{task_uploaded_files} </if>
+				<if test="task_milestone != null"> AND task_milestone like #{task_milestone} </if>
+				<if test="task_parent_review != null">AND task_parent_review like #{task_parent_review} </if>
+				<if test="task_kanban != null"> AND task_kanban like #{task_kanban} </if>
+				<if test="task_order != null"> AND task_order like #{task_order} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_task
+	       <set>
+				<if test="task_name != null"> task_name = #{task_name}, </if>
+				<if test="task_status != null"> task_status = #{task_status}, </if>
+				<if test="task_start_date != null"> task_start_date = #{task_start_date}, </if>
+				<if test="task_end_date != null"> task_end_date = #{task_end_date}, </if>
+				<if test="task_priority != null"> task_priority = #{task_priority}, </if>
+				<if test="task_description != null"> task_description = #{task_description}, </if>
+				<if test="task_target_price != null"> task_target_price = #{task_target_price}, </if>
+				<if test="task_unit != null"> task_unit = #{task_unit}, </if>
+				<if test="task_real_price != null"> task_real_price = #{task_real_price}, </if>
+				<if test="task_feedback_time != null"> task_feedback_time = #{task_feedback_time}, </if>
+				<if test="task_est_worktime != null"> task_est_worktime = #{task_est_worktime}, </if>
+				<if test="task_creator != null"> task_creator = #{task_creator}, </if>
+				<if test="task_owner != null"> task_owner = #{task_owner}, </if>
+				<if test="task_approver != null"> task_approver = #{task_approver}, </if>
+				<if test="task_collaborator != null"> task_collaborator = #{task_collaborator}, </if>
+				<if test="task_parent_object != null">
+					 <if test="task_parent_object != 0">
+						task_parent_object = #{task_parent_object}, 
+					 </if>
+					 <if test="task_parent_object == 0">
+						task_parent_object = NULL, 
+					 </if>
+				</if>
+				<if test="task_parent_kr != null"> 
+					<if test="task_parent_kr != 0">
+						task_parent_kr = #{task_parent_kr},
+					</if>
+					<if test="task_parent_kr == 0">
+						task_parent_kr = NULL,
+					</if>
+				</if>
+				<if test="task_parent_item != null">
+					<if test="task_parent_item != 0">
+						task_parent_item = #{task_parent_item},
+					</if>
+					<if test="task_parent_item == 0">
+						task_parent_item = NULL,
+					</if>
+				</if>
+				<if test="task_parent_task != null"> task_parent_task = #{task_parent_task}, </if>
+				<if test="task_refer != null"> task_refer = #{task_refer}, </if>
+				<if test="task_visible_type != null"> task_visible_type = #{task_visible_type}, </if>
+				<if test="task_visible_range != null"> task_visible_range = #{task_visible_range}, </if>
+				<if test="task_uploaded_files != null"> task_uploaded_files = #{task_uploaded_files}, </if>
+				<if test="task_milestone != null">
+				 	<if test="task_milestone != 0">
+				 		task_milestone = #{task_milestone},
+				 	</if>
+				 	<if test="task_milestone == 0">
+				 		task_milestone = NULL,
+				 	</if>
+				</if>
+				<if test="task_parent_review != null"> task_parent_review = #{task_parent_review}, </if>
+				<if test="task_kanban != null"> task_kanban = #{task_kanban}, </if>
+				<if test="task_progress != null"> task_progress = #{task_progress}, </if>
+				<if test="task_vice_leader != null"> task_vice_leader = #{task_vice_leader}, </if>
+				<if test="task_order != null"> task_order = #{task_order}</if>
+		   </set>
+       where task_id = #{task_id}
+    </update>
+    
+</mapper>

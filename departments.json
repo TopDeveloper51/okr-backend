@@ -1,0 +1,1356 @@
+{
+    "status": true,
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+        {
+            "id": 290,
+            "status": 2,
+            "pid": 289,
+            "departmentOaName": "董事长办公室"
+        },
+        {
+            "id": 302,
+            "status": 2,
+            "pid": 298,
+            "departmentOaName": "受理中心"
+        },
+        {
+            "id": 315,
+            "status": 2,
+            "pid": 302,
+            "departmentOaName": "信息审查部"
+        },
+        {
+            "id": 414,
+            "status": 2,
+            "pid": 307,
+            "departmentOaName": "信息审查部"
+        },
+        {
+            "id": 624,
+            "status": 1,
+            "departmentOaName": "北京首都在线科技股份有限公司"
+        },
+        {
+            "id": 972,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "CEO中心"
+        },
+        {
+            "id": 973,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "销售事业群"
+        },
+        {
+            "id": 974,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "运维事业群"
+        },
+        {
+            "id": 975,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "创新产品事业部"
+        },
+        {
+            "id": 976,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "证券法务中心"
+        },
+        {
+            "id": 977,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "财务核算中心"
+        },
+        {
+            "id": 978,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "行政管理中心"
+        },
+        {
+            "id": 979,
+            "status": 1,
+            "pid": 983,
+            "departmentOaName": "基础数据部"
+        },
+        {
+            "id": 980,
+            "status": 1,
+            "pid": 976,
+            "departmentOaName": "财务部"
+        },
+        {
+            "id": 981,
+            "status": 1,
+            "pid": 974,
+            "departmentOaName": "流程专家"
+        },
+        {
+            "id": 982,
+            "status": 1,
+            "pid": 974,
+            "departmentOaName": "调度中心"
+        },
+        {
+            "id": 983,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "大数据中心"
+        },
+        {
+            "id": 984,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "信息中心"
+        },
+        {
+            "id": 985,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "战略合作部"
+        },
+        {
+            "id": 986,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "项目管理部"
+        },
+        {
+            "id": 987,
+            "status": 1,
+            "pid": 976,
+            "departmentOaName": "法务部"
+        },
+        {
+            "id": 988,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "上海子公司"
+        },
+        {
+            "id": 989,
+            "status": 1,
+            "pid": 1035,
+            "departmentOaName": "华南游戏部"
+        },
+        {
+            "id": 990,
+            "status": 1,
+            "pid": 978,
+            "departmentOaName": "行政部"
+        },
+        {
+            "id": 991,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "武汉子公司"
+        },
+        {
+            "id": 992,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "美国分公司"
+        },
+        {
+            "id": 993,
+            "status": 1,
+            "pid": 976,
+            "departmentOaName": "证券投资部"
+        },
+        {
+            "id": 994,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "人力资源中心"
+        },
+        {
+            "id": 996,
+            "status": 1,
+            "pid": 982,
+            "departmentOaName": "事件响应部"
+        },
+        {
+            "id": 997,
+            "status": 1,
+            "pid": 984,
+            "departmentOaName": "自动化运维部"
+        },
+        {
+            "id": 998,
+            "status": 1,
+            "pid": 980,
+            "departmentOaName": "上海财务部"
+        },
+        {
+            "id": 999,
+            "status": 1,
+            "pid": 1141,
+            "departmentOaName": "上海信息审查"
+        },
+        {
+            "id": 1000,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "系统管理员"
+        },
+        {
+            "id": 1001,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "华东新生态业务部"
+        },
+        {
+            "id": 1002,
+            "status": 1,
+            "pid": 994,
+            "departmentOaName": "业务BP组"
+        },
+        {
+            "id": 1003,
+            "status": 1,
+            "pid": 1004,
+            "departmentOaName": "日常维护组"
+        },
+        {
+            "id": 1004,
+            "status": 1,
+            "pid": 982,
+            "departmentOaName": "机房运维部"
+        },
+        {
+            "id": 1005,
+            "status": 1,
+            "pid": 974,
+            "departmentOaName": "大客户支持部"
+        },
+        {
+            "id": 1006,
+            "status": 1,
+            "pid": 1070,
+            "departmentOaName": "游戏支持部（广州）"
+        },
+        {
+            "id": 1007,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "首云"
+        },
+        {
+            "id": 1008,
+            "status": 1,
+            "pid": 1007,
+            "departmentOaName": "首云技术研发部"
+        },
+        {
+            "id": 1009,
+            "status": 1,
+            "pid": 1007,
+            "departmentOaName": "首云人事行政部"
+        },
+        {
+            "id": 1010,
+            "status": 1,
+            "pid": 1008,
+            "departmentOaName": "首云产品部"
+        },
+        {
+            "id": 1011,
+            "status": 1,
+            "pid": 1070,
+            "departmentOaName": "游戏支持部（上海）"
+        },
+        {
+            "id": 1012,
+            "status": 1,
+            "pid": 1008,
+            "departmentOaName": "首云后端开发"
+        },
+        {
+            "id": 1013,
+            "status": 1,
+            "pid": 1008,
+            "departmentOaName": "首云前端开发部"
+        },
+        {
+            "id": 1014,
+            "status": 1,
+            "pid": 1008,
+            "departmentOaName": "首云系统部"
+        },
+        {
+            "id": 1015,
+            "status": 1,
+            "pid": 1135,
+            "departmentOaName": "上海商务采购部"
+        },
+        {
+            "id": 1016,
+            "status": 1,
+            "pid": 1117,
+            "departmentOaName": "网络与系统运维部"
+        },
+        {
+            "id": 1017,
+            "status": 1,
+            "pid": 1007,
+            "departmentOaName": "首云商务采购部"
+        },
+        {
+            "id": 1018,
+            "status": 1,
+            "pid": 988,
+            "departmentOaName": "上海产品部"
+        },
+        {
+            "id": 1019,
+            "status": 1,
+            "pid": 1007,
+            "departmentOaName": "首云受理中心"
+        },
+        {
+            "id": 1020,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "力通"
+        },
+        {
+            "id": 1023,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽人力资源部"
+        },
+        {
+            "id": 1024,
+            "status": 1,
+            "pid": 1035,
+            "departmentOaName": "西南游戏部"
+        },
+        {
+            "id": 1025,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽产品研发部"
+        },
+        {
+            "id": 1026,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽市场销售部"
+        },
+        {
+            "id": 1027,
+            "status": 1,
+            "pid": 1054,
+            "departmentOaName": "项目交付管理"
+        },
+        {
+            "id": 1028,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽财务部"
+        },
+        {
+            "id": 1029,
+            "status": 1,
+            "pid": 1146,
+            "departmentOaName": "应用运维部"
+        },
+        {
+            "id": 1031,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "互联网广告部"
+        },
+        {
+            "id": 1032,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通技术部"
+        },
+        {
+            "id": 1033,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "北京云宽志业网络技术有限公司"
+        },
+        {
+            "id": 1034,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "IDC产品"
+        },
+        {
+            "id": 1035,
+            "status": 1,
+            "pid": 973,
+            "departmentOaName": "游戏事业部"
+        },
+        {
+            "id": 1036,
+            "status": 1,
+            "pid": 1052,
+            "departmentOaName": "华北游戏一组"
+        },
+        {
+            "id": 1037,
+            "status": 1,
+            "pid": 1052,
+            "departmentOaName": "华北游戏二组"
+        },
+        {
+            "id": 1038,
+            "status": 1,
+            "pid": 1052,
+            "departmentOaName": "华北游戏后场VIP"
+        },
+        {
+            "id": 1039,
+            "status": 1,
+            "pid": 1052,
+            "departmentOaName": "华北客服"
+        },
+        {
+            "id": 1040,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "售前支持部"
+        },
+        {
+            "id": 1041,
+            "status": 1,
+            "pid": 981,
+            "departmentOaName": "故障流程内控"
+        },
+        {
+            "id": 1042,
+            "status": 1,
+            "pid": 1001,
+            "departmentOaName": "华东新生态业务部一组"
+        },
+        {
+            "id": 1043,
+            "status": 1,
+            "pid": 1001,
+            "departmentOaName": "华东新生态业务部二组"
+        },
+        {
+            "id": 1044,
+            "status": 2,
+            "pid": 1001,
+            "departmentOaName": "上海综合客服"
+        },
+        {
+            "id": 1045,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "架构中心"
+        },
+        {
+            "id": 1046,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽运营部"
+        },
+        {
+            "id": 1047,
+            "status": 1,
+            "pid": 972,
+            "departmentOaName": "数据中心事业部"
+        },
+        {
+            "id": 1048,
+            "status": 1,
+            "pid": 1045,
+            "departmentOaName": "网络架构部"
+        },
+        {
+            "id": 1049,
+            "status": 1,
+            "pid": 1005,
+            "departmentOaName": "电商支持部"
+        },
+        {
+            "id": 1050,
+            "status": 1,
+            "pid": 1005,
+            "departmentOaName": "视频支持部"
+        },
+        {
+            "id": 1051,
+            "status": 1,
+            "pid": 1005,
+            "departmentOaName": "综合支持部"
+        },
+        {
+            "id": 1052,
+            "status": 1,
+            "pid": 1035,
+            "departmentOaName": "华北游戏部"
+        },
+        {
+            "id": 1053,
+            "status": 1,
+            "pid": 973,
+            "departmentOaName": "综合事业部"
+        },
+        {
+            "id": 1054,
+            "status": 1,
+            "pid": 975,
+            "departmentOaName": "裸金属产品部"
+        },
+        {
+            "id": 1055,
+            "status": 1,
+            "pid": 1054,
+            "departmentOaName": "产品与运营"
+        },
+        {
+            "id": 1056,
+            "status": 2,
+            "pid": 624,
+            "departmentOaName": "PaaS产品运营部"
+        },
+        {
+            "id": 1057,
+            "status": 2,
+            "pid": 975,
+            "departmentOaName": "创新产品研发中心"
+        },
+        {
+            "id": 1058,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "裸金属研发部"
+        },
+        {
+            "id": 1059,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "数据研发部"
+        },
+        {
+            "id": 1060,
+            "status": 1,
+            "pid": 1146,
+            "departmentOaName": "测试部"
+        },
+        {
+            "id": 1061,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "CDN&视频研发部"
+        },
+        {
+            "id": 1062,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "计算产品事业部"
+        },
+        {
+            "id": 1063,
+            "status": 1,
+            "pid": 1146,
+            "departmentOaName": "开发部"
+        },
+        {
+            "id": 1064,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "网络研发部"
+        },
+        {
+            "id": 1065,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "主机研发部"
+        },
+        {
+            "id": 1066,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "平台研发部"
+        },
+        {
+            "id": 1067,
+            "status": 1,
+            "pid": 978,
+            "departmentOaName": "广州行政"
+        },
+        {
+            "id": 1068,
+            "status": 1,
+            "pid": 978,
+            "departmentOaName": "上海行政"
+        },
+        {
+            "id": 1069,
+            "status": 1,
+            "pid": 978,
+            "departmentOaName": "成都行政"
+        },
+        {
+            "id": 1070,
+            "status": 1,
+            "pid": 1005,
+            "departmentOaName": "游戏支持部"
+        },
+        {
+            "id": 1071,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "市场部"
+        },
+        {
+            "id": 1072,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "混合云事业部"
+        },
+        {
+            "id": 1073,
+            "status": 1,
+            "pid": 1072,
+            "departmentOaName": "谷歌云业务部"
+        },
+        {
+            "id": 1074,
+            "status": 1,
+            "pid": 1072,
+            "departmentOaName": "销售部"
+        },
+        {
+            "id": 1075,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "北京中瑞云祥信息科技发展有限公司"
+        },
+        {
+            "id": 1076,
+            "status": 1,
+            "pid": 1075,
+            "departmentOaName": "中瑞商务部"
+        },
+        {
+            "id": 1077,
+            "status": 1,
+            "pid": 1075,
+            "departmentOaName": "中瑞技术部"
+        },
+        {
+            "id": 1078,
+            "status": 1,
+            "pid": 1075,
+            "departmentOaName": "中瑞客服部"
+        },
+        {
+            "id": 1079,
+            "status": 1,
+            "pid": 977,
+            "departmentOaName": "首云核算部"
+        },
+        {
+            "id": 1080,
+            "status": 1,
+            "pid": 977,
+            "departmentOaName": "子公司核算部"
+        },
+        {
+            "id": 1081,
+            "status": 1,
+            "pid": 977,
+            "departmentOaName": "报告管理与支持部"
+        },
+        {
+            "id": 1082,
+            "status": 1,
+            "pid": 973,
+            "departmentOaName": "音视频事业部"
+        },
+        {
+            "id": 1083,
+            "status": 1,
+            "pid": 973,
+            "departmentOaName": "教育事业部"
+        },
+        {
+            "id": 1084,
+            "status": 1,
+            "pid": 1082,
+            "departmentOaName": "华东音视频部"
+        },
+        {
+            "id": 1085,
+            "status": 1,
+            "pid": 1082,
+            "departmentOaName": "华南音视频部"
+        },
+        {
+            "id": 1086,
+            "status": 1,
+            "pid": 1035,
+            "departmentOaName": "华东游戏部"
+        },
+        {
+            "id": 1087,
+            "status": 1,
+            "pid": 1188,
+            "departmentOaName": "华东游戏一组"
+        },
+        {
+            "id": 1088,
+            "status": 1,
+            "pid": 1188,
+            "departmentOaName": "华东游戏二组"
+        },
+        {
+            "id": 1089,
+            "status": 1,
+            "pid": 1086,
+            "departmentOaName": "华东游戏VIP"
+        },
+        {
+            "id": 1090,
+            "status": 1,
+            "pid": 989,
+            "departmentOaName": "华南游戏一组"
+        },
+        {
+            "id": 1091,
+            "status": 1,
+            "pid": 989,
+            "departmentOaName": "华南游戏二组"
+        },
+        {
+            "id": 1092,
+            "status": 1,
+            "pid": 989,
+            "departmentOaName": "华南游戏VIP"
+        },
+        {
+            "id": 1093,
+            "status": 1,
+            "pid": 1024,
+            "departmentOaName": "西南游戏一组"
+        },
+        {
+            "id": 1094,
+            "status": 1,
+            "pid": 1024,
+            "departmentOaName": "西南游戏二组"
+        },
+        {
+            "id": 1095,
+            "status": 1,
+            "pid": 1185,
+            "departmentOaName": "华北教育二组"
+        },
+        {
+            "id": 1096,
+            "status": 1,
+            "pid": 1084,
+            "departmentOaName": "华东音视频一组"
+        },
+        {
+            "id": 1097,
+            "status": 1,
+            "pid": 1084,
+            "departmentOaName": "华东音视频二组"
+        },
+        {
+            "id": 1098,
+            "status": 1,
+            "pid": 1085,
+            "departmentOaName": "华南音视频一组"
+        },
+        {
+            "id": 1099,
+            "status": 1,
+            "pid": 1185,
+            "departmentOaName": "华北教育一组"
+        },
+        {
+            "id": 1100,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "华北大客户部"
+        },
+        {
+            "id": 1101,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "华北新生态业务部"
+        },
+        {
+            "id": 1102,
+            "status": 1,
+            "pid": 973,
+            "departmentOaName": "销售CTO"
+        },
+        {
+            "id": 1103,
+            "status": 2,
+            "pid": 1099,
+            "departmentOaName": "北京电商二组"
+        },
+        {
+            "id": 1104,
+            "status": 2,
+            "pid": 1099,
+            "departmentOaName": "北京电商客服部"
+        },
+        {
+            "id": 1105,
+            "status": 1,
+            "pid": 1053,
+            "departmentOaName": "华南综合部"
+        },
+        {
+            "id": 1106,
+            "status": 1,
+            "pid": 1053,
+            "departmentOaName": "华东综合部"
+        },
+        {
+            "id": 1107,
+            "status": 1,
+            "pid": 1105,
+            "departmentOaName": "华南综合一组"
+        },
+        {
+            "id": 1108,
+            "status": 1,
+            "pid": 1105,
+            "departmentOaName": "华南综合二组"
+        },
+        {
+            "id": 1109,
+            "status": 1,
+            "pid": 1106,
+            "departmentOaName": "华东综合一组"
+        },
+        {
+            "id": 1110,
+            "status": 1,
+            "pid": 1034,
+            "departmentOaName": "产品部"
+        },
+        {
+            "id": 1111,
+            "status": 1,
+            "pid": 1034,
+            "departmentOaName": "推广部"
+        },
+        {
+            "id": 1112,
+            "status": 2,
+            "pid": 1110,
+            "departmentOaName": "上海电商一组"
+        },
+        {
+            "id": 1113,
+            "status": 2,
+            "pid": 1110,
+            "departmentOaName": "上海电商二组"
+        },
+        {
+            "id": 1114,
+            "status": 1,
+            "pid": 1034,
+            "departmentOaName": "资产管理部"
+        },
+        {
+            "id": 1115,
+            "status": 1,
+            "pid": 986,
+            "departmentOaName": "项目管理组"
+        },
+        {
+            "id": 1116,
+            "status": 1,
+            "pid": 1168,
+            "departmentOaName": "交付管理部"
+        },
+        {
+            "id": 1117,
+            "status": 1,
+            "pid": 974,
+            "departmentOaName": "运维技术支持中心"
+        },
+        {
+            "id": 1118,
+            "status": 1,
+            "pid": 994,
+            "departmentOaName": "平台BP组"
+        },
+        {
+            "id": 1119,
+            "status": 1,
+            "pid": 994,
+            "departmentOaName": "人事部"
+        },
+        {
+            "id": 1121,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "华南新生态业务部"
+        },
+        {
+            "id": 1122,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "北京贰零四玖云计算数据技术服务有限公司"
+        },
+        {
+            "id": 1123,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通财务部"
+        },
+        {
+            "id": 1124,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通运营部"
+        },
+        {
+            "id": 1125,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通互联网客户部"
+        },
+        {
+            "id": 1126,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通解决方案部"
+        },
+        {
+            "id": 1127,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通客服部"
+        },
+        {
+            "id": 1128,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通政企客户部"
+        },
+        {
+            "id": 1129,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通总经办"
+        },
+        {
+            "id": 1130,
+            "status": 2,
+            "pid": 974,
+            "departmentOaName": "运维支持中心"
+        },
+        {
+            "id": 1132,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通商务部"
+        },
+        {
+            "id": 1133,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "力通行政人事部"
+        },
+        {
+            "id": 1134,
+            "status": 1,
+            "pid": 1168,
+            "departmentOaName": "设备采购部"
+        },
+        {
+            "id": 1135,
+            "status": 1,
+            "pid": 985,
+            "departmentOaName": "通信资源部"
+        },
+        {
+            "id": 1136,
+            "status": 1,
+            "pid": 985,
+            "departmentOaName": "海外资源组"
+        },
+        {
+            "id": 1137,
+            "status": 1,
+            "pid": 985,
+            "departmentOaName": "战略合作部"
+        },
+        {
+            "id": 1138,
+            "status": 2,
+            "pid": 1020,
+            "departmentOaName": "无锡分公司"
+        },
+        {
+            "id": 1139,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "北京销售事业部"
+        },
+        {
+            "id": 1140,
+            "status": 1,
+            "pid": 1026,
+            "departmentOaName": "冷云销售团队1"
+        },
+        {
+            "id": 1141,
+            "status": 1,
+            "pid": 978,
+            "departmentOaName": "质量监督部"
+        },
+        {
+            "id": 1142,
+            "status": 1,
+            "pid": 1075,
+            "departmentOaName": "顾问"
+        },
+        {
+            "id": 1143,
+            "status": 1,
+            "pid": 1053,
+            "departmentOaName": "华北综合部"
+        },
+        {
+            "id": 1144,
+            "status": 1,
+            "pid": 1074,
+            "departmentOaName": "渠道组"
+        },
+        {
+            "id": 1145,
+            "status": 1,
+            "pid": 1074,
+            "departmentOaName": "后场组"
+        },
+        {
+            "id": 1146,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "研发中心"
+        },
+        {
+            "id": 1147,
+            "status": 1,
+            "pid": 1146,
+            "departmentOaName": "研发中心服务部"
+        },
+        {
+            "id": 1148,
+            "status": 1,
+            "pid": 1072,
+            "departmentOaName": "产品技术部"
+        },
+        {
+            "id": 1149,
+            "status": 1,
+            "pid": 1058,
+            "departmentOaName": "架构组"
+        },
+        {
+            "id": 1150,
+            "status": 1,
+            "pid": 1058,
+            "departmentOaName": "业务组"
+        },
+        {
+            "id": 1151,
+            "status": 1,
+            "pid": 1063,
+            "departmentOaName": "容器研发部"
+        },
+        {
+            "id": 1152,
+            "status": 2,
+            "pid": 1054,
+            "departmentOaName": "容器产品线"
+        },
+        {
+            "id": 1153,
+            "status": 1,
+            "pid": 975,
+            "departmentOaName": "容器产品线"
+        },
+        {
+            "id": 1154,
+            "status": 1,
+            "pid": 975,
+            "departmentOaName": "对象存储产品线"
+        },
+        {
+            "id": 1155,
+            "status": 1,
+            "pid": 975,
+            "departmentOaName": "产品技术部"
+        },
+        {
+            "id": 1156,
+            "status": 1,
+            "pid": 975,
+            "departmentOaName": "产品管理部"
+        },
+        {
+            "id": 1157,
+            "status": 1,
+            "pid": 977,
+            "departmentOaName": "资产管理组"
+        },
+        {
+            "id": 1158,
+            "status": 1,
+            "pid": 977,
+            "departmentOaName": "资金及税务管理组"
+        },
+        {
+            "id": 1159,
+            "status": 1,
+            "pid": 1079,
+            "departmentOaName": "收入核算组"
+        },
+        {
+            "id": 1160,
+            "status": 1,
+            "pid": 1079,
+            "departmentOaName": "成本费用核算组"
+        },
+        {
+            "id": 1161,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "网络产品事业部"
+        },
+        {
+            "id": 1162,
+            "status": 1,
+            "pid": 1161,
+            "departmentOaName": "产品部"
+        },
+        {
+            "id": 1163,
+            "status": 1,
+            "pid": 1161,
+            "departmentOaName": "运营部"
+        },
+        {
+            "id": 1164,
+            "status": 1,
+            "pid": 1161,
+            "departmentOaName": "客户推广部"
+        },
+        {
+            "id": 1165,
+            "status": 1,
+            "pid": 1167,
+            "departmentOaName": "合作伙伴业务部"
+        },
+        {
+            "id": 1166,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "技术和信息安全委员会"
+        },
+        {
+            "id": 1167,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "新生态事业部"
+        },
+        {
+            "id": 1168,
+            "status": 1,
+            "pid": 624,
+            "departmentOaName": "运营中心"
+        },
+        {
+            "id": 1169,
+            "status": 1,
+            "pid": 1035,
+            "departmentOaName": "游戏售前支持部"
+        },
+        {
+            "id": 1170,
+            "status": 1,
+            "pid": 1082,
+            "departmentOaName": "音视频售前支持部"
+        },
+        {
+            "id": 1171,
+            "status": 1,
+            "pid": 1053,
+            "departmentOaName": "综合售前支持部"
+        },
+        {
+            "id": 1172,
+            "status": 1,
+            "pid": 1168,
+            "departmentOaName": "运营部"
+        },
+        {
+            "id": 1173,
+            "status": 1,
+            "pid": 983,
+            "departmentOaName": "数据应用部"
+        },
+        {
+            "id": 1174,
+            "status": 1,
+            "pid": 983,
+            "departmentOaName": "数据研发部"
+        },
+        {
+            "id": 1175,
+            "status": 1,
+            "pid": 984,
+            "departmentOaName": "信息部"
+        },
+        {
+            "id": 1176,
+            "status": 1,
+            "pid": 976,
+            "departmentOaName": "内部审计"
+        },
+        {
+            "id": 1177,
+            "status": 1,
+            "pid": 1136,
+            "departmentOaName": "海外资源组-2"
+        },
+        {
+            "id": 1178,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "自建IDC事业部"
+        },
+        {
+            "id": 1179,
+            "status": 1,
+            "pid": 1004,
+            "departmentOaName": "硬件维护组"
+        },
+        {
+            "id": 1180,
+            "status": 1,
+            "pid": 1084,
+            "departmentOaName": "华东音视频三组"
+        },
+        {
+            "id": 1181,
+            "status": 1,
+            "pid": 1084,
+            "departmentOaName": "华东音视频VIP"
+        },
+        {
+            "id": 1182,
+            "status": 1,
+            "pid": 1106,
+            "departmentOaName": "华东综合二组"
+        },
+        {
+            "id": 1183,
+            "status": 1,
+            "pid": 1106,
+            "departmentOaName": "华东综合客服"
+        },
+        {
+            "id": 1184,
+            "status": 1,
+            "pid": 1185,
+            "departmentOaName": "华北教育客服"
+        },
+        {
+            "id": 1185,
+            "status": 1,
+            "pid": 1083,
+            "departmentOaName": "华北教育部"
+        },
+        {
+            "id": 1186,
+            "status": 1,
+            "pid": 1189,
+            "departmentOaName": "华东游戏四组"
+        },
+        {
+            "id": 1187,
+            "status": 1,
+            "pid": 1189,
+            "departmentOaName": "华东游戏五组"
+        },
+        {
+            "id": 1188,
+            "status": 1,
+            "pid": 1086,
+            "departmentOaName": "华东游戏一部"
+        },
+        {
+            "id": 1189,
+            "status": 1,
+            "pid": 1086,
+            "departmentOaName": "华东游戏二部"
+        },
+        {
+            "id": 1190,
+            "status": 1,
+            "pid": 1188,
+            "departmentOaName": "华东游戏三组"
+        },
+        {
+            "id": 1191,
+            "status": 1,
+            "pid": 1020,
+            "departmentOaName": "南沙销售办事处"
+        },
+        {
+            "id": 1192,
+            "status": 1,
+            "pid": 1116,
+            "departmentOaName": "实施管理部"
+        },
+        {
+            "id": 1193,
+            "status": 1,
+            "pid": 1116,
+            "departmentOaName": "项目部"
+        },
+        {
+            "id": 1194,
+            "status": 1,
+            "pid": 1067,
+            "departmentOaName": "广州行政-1"
+        },
+        {
+            "id": 1195,
+            "status": 1,
+            "pid": 1075,
+            "departmentOaName": "中瑞采购部"
+        },
+        {
+            "id": 1196,
+            "status": 1,
+            "pid": 1033,
+            "departmentOaName": "云宽运维部"
+        }
+    ],
+    "data2": null,
+    "data3": null,
+    "page": 0,
+    "pagesount": 0,
+    "pagesize": 0,
+    "totalRecords": 0
+}

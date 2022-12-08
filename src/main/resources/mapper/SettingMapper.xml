@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.SettingMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Setting">
+        select * from tb_setting
+        	<where>
+				<if test="st_id != null">st_id like #{st_id} </if>
+				<if test="st_value != null"> AND st_value like #{st_value} </if>
+				<if test="st_category_id != null"> AND st_category_id like #{st_category_id} </if>
+				<if test="st_category_type != null"> AND st_category_type like #{st_category_type} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="st_id">
+		<selectKey keyProperty="st_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_setting 
+        	<set>
+	        	<if test="st_id != null"> st_id = #{st_id}, </if>
+				<if test="st_value != null"> st_value = #{st_value}, </if>
+				<if test="st_category_type != null"> st_category_type = #{st_category_type}, </if>
+				<if test="st_category_id != null"> st_category_id = #{st_category_id} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_setting 
+			<where>
+				<if test="st_id != null">st_id like #{st_id} </if>
+				<if test="st_category_type != null"> AND st_category_type like #{st_category_type} </if>
+				<if test="st_value != null"> AND st_value like #{st_value} </if>
+				<if test="st_category_id != null"> AND st_category_id like #{st_category_id} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_setting
+	       <set>
+				<if test="st_category_type != null"> st_category_type = #{st_category_type}, </if>
+				<if test="st_value != null"> st_value = #{st_value}, </if>
+				<if test="st_category_id != null"> st_category_id = #{st_category_id} </if>
+		   </set>
+       where st_id = #{st_id}
+    </update>
+    
+</mapper>

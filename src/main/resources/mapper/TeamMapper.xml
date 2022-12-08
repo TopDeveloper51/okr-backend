@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.TeamMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Team">
+        select * from tb_team
+        	<where>
+				<if test="team_id != null"> team_id like #{team_id} </if>
+				<if test="team_name != null"> AND team_name like #{team_name} </if>
+				<if test="team_leaders != null"> AND team_leaders like #{team_leaders} </if>
+				<if test="team_collaborates != null"> AND team_collaborates like #{team_collaborates} </if>
+				<if test="team_company_id != null"> AND team_company_id like #{team_company_id} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="team_id">
+		<selectKey keyProperty="team_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_team
+        	<set>
+        		<if test="team_id != null"> team_id = #{team_id}, </if>
+				<if test="team_name != null"> team_name = #{team_name}, </if>
+				<if test="team_leaders != null"> team_leaders = #{team_leaders}, </if>
+				<if test="team_collaborates != null"> team_collaborates = #{team_collaborates}, </if>
+				<if test="team_members != null"> team_members = #{team_members}, </if>
+				<if test="team_company_id != null"> team_company_id = #{team_company_id} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_team 
+			<where>
+				<if test="team_id != null"> team_id like #{team_id} </if>
+				<if test="team_name != null"> AND team_name like #{team_name} </if>
+				<if test="team_leaders != null"> AND team_leaders like #{team_leaders} </if>
+				<if test="team_collaborates != null"> AND team_collaborates like #{team_collaborates} </if>
+				<if test="team_company_id != null"> AND team_company_id like #{team_company_id} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_team
+	       <set>
+				<if test="team_name != null"> team_name = #{team_name}, </if>
+				<if test="team_leaders != null"> team_leaders = #{team_leaders}, </if>
+				<if test="team_collaborates != null"> team_collaborates = #{team_collaborates}, </if>
+				<if test="team_members != null"> team_members = #{team_members}, </if>
+				<if test="team_company_id != null"> team_company_id = #{team_company_id} </if>
+		   </set>
+       where team_id = #{team_id}
+    </update>
+    
+</mapper>

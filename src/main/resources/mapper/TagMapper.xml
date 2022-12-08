@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.TagMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Tag">
+        select * from tb_tag
+        	<where>
+				<if test="tag_id != null"> tag_id like #{tag_id} </if>
+				<if test="tag_name != null"> AND tag_name like #{tag_name} </if>
+				<if test="tag_color != null"> AND tag_color like #{tag_color} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="tag_id">
+		<selectKey keyProperty="tag_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_tag
+        	<set>
+        		<if test="tag_id != null"> tag_id = #{tag_id}, </if>
+				<if test="tag_name != null"> tag_name = #{tag_name}, </if>
+				<if test="tag_color != null"> tag_color = #{tag_color} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_tag 
+			<where>
+				<if test="tag_id != null"> tag_id like #{tag_id} </if>
+				<if test="tag_name != null"> AND tag_name like #{tag_name} </if>
+				<if test="tag_color != null"> AND tag_color like #{tag_color} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_tag
+	       <set>
+				<if test="tag_name != null"> tag_name = #{tag_name}, </if>
+				<if test="tag_color != null"> tag_color = #{tag_color} </if>
+		   </set>
+       where tag_id = #{tag_id}
+    </update>
+    
+</mapper>

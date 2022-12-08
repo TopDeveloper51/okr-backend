@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.DutyMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Duty">
+        select * from tb_duty
+        	<where>
+				<if test="duty_id != null"> duty_id like #{duty_id} </if>
+				<if test="duty_name != null">AND duty_name like #{duty_name} </if>
+				<if test="duty_code != null">AND duty_code like #{duty_code} </if>
+				<if test="duty_type != null">AND duty_type like #{duty_type} </if>
+				<if test="duty_serial_num != null">AND duty_serial_num like #{duty_serial_num} </if>
+				<if test="duty_description != null">AND duty_description like #{duty_description} </if>
+				<if test="duty_status != null">AND duty_status like #{duty_status} </if>
+		  	</where>
+    </select>
+    
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="duty_id">
+		<selectKey keyProperty="duty_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_duty
+        	<set>
+        		<if test="duty_id != null"> duty_id = #{duty_id}, </if>
+				<if test="duty_name != null"> duty_name = #{duty_name}, </if>
+				<if test="duty_code != null"> duty_code = #{duty_code}, </if>
+				<if test="duty_type != null"> duty_type = #{duty_type}, </if>
+				<if test="duty_serial_num != null"> duty_serial_num = #{duty_serial_num}, </if>
+				<if test="duty_description != null"> duty_description = #{duty_description}, </if>
+				<if test="duty_status != null"> duty_status = #{duty_status} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_duty 
+			<where>
+				<if test="duty_id != null"> duty_id like #{duty_id} </if>
+				<if test="duty_name != null">AND duty_name like #{duty_name} </if>
+				<if test="duty_code != null">AND duty_code like #{duty_code} </if>
+				<if test="duty_type != null">AND duty_type like #{duty_type} </if>
+				<if test="duty_serial_num != null">AND duty_serial_num like #{duty_serial_num} </if>
+				<if test="duty_description != null">AND duty_description like #{duty_description} </if>
+				<if test="duty_status != null">AND duty_status like #{duty_status} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_duty
+	       <set>
+				<if test="duty_name != null"> duty_name = #{duty_name}, </if>
+				<if test="duty_code != null"> duty_code = #{duty_code}, </if>
+				<if test="duty_type != null"> duty_type = #{duty_type}, </if>
+				<if test="duty_serial_num != null"> duty_serial_num = #{duty_serial_num}, </if>
+				<if test="duty_description != null"> duty_description = #{duty_description}, </if>
+				<if test="duty_status != null"> duty_status = #{duty_status} </if>
+		   </set>
+       where duty_id = #{duty_id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.MilestoneMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildTaskResultMap">
+    	<if test="ms_parent_item != null"> 
+			<bind name="pattern" value="'rest' + ms_parent_item" />
+		</if>  	
+        select * 
+        	,CONCAT(',',ms_task,',') as tid
+        from tb_milestone
+        	<where>
+				<if test="ms_id != null">  ms_id like #{ms_id} </if>
+				<if test="ms_name != null"> AND ms_name like #{ms_name} </if>
+				<if test="ms_description != null"> AND ms_description like #{ms_description} </if>
+				<if test="ms_progress != null"> AND ms_progress like #{ms_progress} </if>
+				<if test="ms_start_date != null"> AND ms_start_date like #{ms_start_date} </if>
+				<if test="ms_end_date != null"> AND ms_end_date like #{ms_end_date} </if>
+				<if test="ms_owner != null"> AND ms_owner like #{ms_owner} </if>
+				<if test="ms_parent_item != null"> AND ms_parent_item like #{ms_parent_item} </if>
+		  	</where>
+		<if test="ms_parent_item != null"> 
+			union all
+			select 0,'','',0,'','',0,#{ms_parent_item},'','2000-01-01 00:00:00','2000-01-01 00:00:00',#{pattern}
+		</if>  	
+		
+		  order by ms_start_date, ms_end_date, ms_id ASC
+		
+		
+    </select>
+    <resultMap id="ChildTaskResultMap" type="Milestone" >
+    	<collection property="ms_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByMilestone"/>
+    </resultMap>
+    	<select id="selectTaskByMilestone" resultMap="ParentTaskTaskResultMap">
+			<if test="tid.contains('rest')"> 
+				<bind name="pattern" value="tid.substring(4)" />
+				select tbtask.*
+	    		, CONCAT(sum(if(tb_subtask.task_status=1,1,0)),'/',count(tb_subtask.task_id)) as task_subtask_status
+	    			, tbtask.task_id as tid
+					, tbtask.task_id as prid 
+				from (
+				select * 
+				from(
+				select tbtask.*, count(ms_id) as cnt
+				from (
+				select *
+				from tb_task
+				where task_parent_item like #{pattern}
+				)as tbtask
+				left join tb_milestone on ms_parent_item like #{pattern} and CONCAT(',',ms_task,',') like CONCAT('%,',task_id,',%')
+				group by task_id
+				) as tbtask
+				where cnt = 0
+				) as tbtask
+				left join tb_task as tb_subtask on tbtask.task_id = tb_subtask.task_parent_task
+				group by tbtask.task_id
+			</if>
+			<if test="!tid.contains('rest')"> 
+				select tbtask.*
+					, CONCAT(sum(if(tb_subtask.task_status=1,1,0)),'/',count(tb_subtask.task_id)) as task_subtask_status
+					, tbtask.task_id as tid
+					, tbtask.task_id as prid
+				from (
+					select *
+					from tb_task 
+						where #{tid} like CONCAT('%,',task_id,',%')
+						
+				) as tbtask
+				left join tb_task as tb_subtask on tbtask.task_id = tb_subtask.task_parent_task
+				group by tbtask.task_id
+				<if test="tid.length()>2">
+					ORDER BY FIELD (tbtask.task_id,
+						<foreach item="item" index="index" collection="tid.substring(1).split(',')"
+							open="" separator="," close="">
+								#{item}
+						</foreach>
+					) 
+				</if>
+			</if>
+    	</select>
+    	
+    	<resultMap id="ParentTaskTaskResultMap" type="Otask" >
+	    	<collection property="task_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByTask"/>
+	    	<collection property="task_progresses" javaType="ArrayList" column="prid" ofType="Tprogress" select="selectProgressByTask"/>
+	    </resultMap>
+	    	<select id="selectProgressByTask" resultType="Tprogress">
+		        select *
+		        from tb_progress 
+		        	where pr_parent_type = 2 AND pr_parent = #{prid}
+	    	</select>
+	    	<select id="selectTaskByTask" resultMap="ParentTaskTaskResultMap">
+		        select *,
+		        	task_id as tid 
+			        ,departmentOaName as task_dept_name
+			        ,employeeName as task_owner_name
+		        from tb_task
+		        left join tb_user on tb_user.id = task_owner
+		        left join tb_department on tb_department.id = deptId 
+		        	where task_parent_task = #{tid}
+	    	</select>
+    
+    	
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="ms_id">
+		<selectKey keyProperty="ms_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_milestone
+        	<set>
+        		<if test="ms_id != null"> ms_id = #{ms_id}, </if>
+				<if test="ms_name != null"> ms_name = #{ms_name}, </if>
+				<if test="ms_description != null"> ms_description = #{ms_description}, </if>
+				<if test="ms_progress != null"> ms_progress = #{ms_progress}, </if>
+				<if test="ms_start_date != null"> ms_start_date = #{ms_start_date}, </if>
+				<if test="ms_end_date != null"> ms_end_date = #{ms_end_date}, </if>
+				<if test="ms_owner != null"> ms_owner = #{ms_owner}, </if>
+				<if test="ms_task != null"> ms_task = #{ms_task}, </if>
+				<if test="ms_parent_item != null"> ms_parent_item = #{ms_parent_item} </if>
+		   </set> 
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_milestone 
+			<where>
+				<if test="ms_id != null">  ms_id like #{ms_id} </if>
+				<if test="ms_name != null"> AND ms_name like #{ms_name} </if>
+				<if test="ms_description != null"> AND ms_description like #{ms_description} </if>
+				<if test="ms_progress != null"> AND ms_progress like #{ms_progress} </if>
+				<if test="ms_start_date != null"> AND ms_start_date like #{ms_start_date} </if>
+				<if test="ms_end_date != null"> AND ms_end_date like #{ms_end_date} </if>
+				<if test="ms_owner != null"> AND ms_owner like #{ms_owner} </if>
+				<if test="ms_parent_item != null"> AND ms_parent_item like #{ms_parent_item} </if>
+				<if test="created_at != null"> AND created_at like #{created_at} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_milestone
+	       <set>
+				<if test="ms_name != null"> ms_name = #{ms_name}, </if>
+				<if test="ms_description != null"> ms_description = #{ms_description}, </if>
+				<if test="ms_progress != null"> ms_progress = #{ms_progress}, </if>
+				<if test="ms_start_date != null"> ms_start_date = #{ms_start_date}, </if>
+				<if test="ms_end_date != null"> ms_end_date = #{ms_end_date}, </if>
+				<if test="ms_owner != null"> ms_owner = #{ms_owner}, </if>
+				<if test="ms_task != null"> ms_task = #{ms_task}, </if>
+				<if test="ms_parent_item != null"> ms_parent_item = #{ms_parent_item} </if>
+		   </set>
+       where ms_id = #{ms_id}
+    </update>
+    
+</mapper>

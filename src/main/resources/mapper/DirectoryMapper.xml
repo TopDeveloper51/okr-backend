@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.DirectoryMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="SubDirectoryResultMap">
+        select * 
+	        ,dir_id as fid
+	        ,dir_id as did
+        from tb_directory
+        	<where>
+				<if test="dir_id != null"> dir_id like #{dir_id} </if>
+				<if test="dir_name != null"> AND dir_name like #{dir_name} </if>
+				<if test="dir_creator != null"> AND dir_creator like #{dir_creator} </if>
+				<if test="dir_parent_type != null"> AND dir_parent_type like #{dir_parent_type} </if>
+				<if test="dir_parent != null"> AND dir_parent like #{dir_parent} </if>
+				<if test="dir_parent_dir != null"> 
+					<if test="dir_parent_dir != 0">
+						AND dir_parent_dir like #{dir_parent_dir} 
+					</if>
+					<if test="dir_parent_dir == 0"> 
+						AND dir_parent_dir is null
+					</if>					 
+				</if>
+		  	</where>
+    </select>
+    <resultMap id="SubDirectoryResultMap" type="Directory" >
+    	<collection property="dir_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFileByDir"/>
+    	<collection property="dir_dirs" javaType="ArrayList" column="did" ofType="Directory" select="selectDirByDir"/>
+    </resultMap>
+    	<select id="selectDirByDir" resultMap="SubDirectoryResultMap">
+	        select *
+		        ,dir_id as fid
+		        ,dir_id as did	        
+	        from tb_directory
+	        where  #{dir_id} like dir_parent_dir
+    	</select>
+    	<select id="selectFileByDir" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{dir_id} like file_parent_dir
+    	</select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="dir_id">
+		<selectKey keyProperty="dir_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_directory
+        	<set>
+        		<if test="dir_id != null"> dir_id = #{dir_id}, </if>
+				<if test="dir_name != null">  dir_name = #{dir_name}, </if>
+				<if test="dir_creator != null">  dir_creator = #{dir_creator}, </if>
+				<if test="dir_parent_type != null">  dir_parent_type = #{dir_parent_type}, </if>
+				<if test="dir_parent != null">  dir_parent = #{dir_parent}, </if>
+				<if test="dir_parent_dir != null">  dir_parent_dir = #{dir_parent_dir} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_directory 
+			<where>
+				<if test="dir_id != null"> dir_id like #{dir_id} </if>
+				<if test="dir_name != null"> AND dir_name like #{dir_name} </if>
+				<if test="dir_creator != null"> AND dir_creator like #{dir_creator} </if>
+				<if test="dir_parent_type != null"> AND dir_parent_type like #{dir_parent_type} </if>
+				<if test="dir_parent != null"> AND dir_parent like #{dir_parent} </if>
+				<if test="dir_parent_dir != null"> AND dir_parent_dir like #{dir_parent_dir} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_directory
+	       <set>
+				<if test="dir_name != null">  dir_name = #{dir_name}, </if>
+				<if test="dir_creator != null">  dir_creator = #{dir_creator}, </if>
+				<if test="dir_parent_type != null">  dir_parent_type = #{dir_parent_type}, </if>
+				<if test="dir_parent != null">  dir_parent = #{dir_parent}, </if>
+				<if test="dir_parent_dir != null"> 
+					<if test="dir_parent_dir != 0">
+						dir_parent_dir = #{dir_parent_dir}
+					</if>
+					<if test="dir_parent_dir == 0"> 
+						dir_parent_dir = null
+					</if>					 
+				</if>
+		   </set>
+       where dir_id = #{dir_id}
+    </update>
+    
+</mapper>

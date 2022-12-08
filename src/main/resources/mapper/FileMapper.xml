@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.FileMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="TFile">
+        select tb_file.*, user_post_address as file_dir
+        from tb_file
+        left join tb_user on file_owner = id        
+        	<where>
+				<if test="file_id != null"> file_id like #{file_id} </if>
+				<if test="file_owner != null"> AND file_owner like #{file_owner} </if>
+				<if test="file_name != null"> AND file_name like #{file_name} </if>
+				<if test="file_uri != null"> AND file_uri like #{file_uri} </if>
+				<if test="file_type != null"> AND file_type like #{file_type} </if>
+				<if test="file_size != null"> AND file_size like #{file_size} </if>
+				<if test="file_parent_type != null"> AND file_parent_type like #{file_parent_type} </if>
+				<if test="file_parent != null"> AND file_parent like #{file_parent} </if>
+				<if test="file_parent_dir != null"> AND file_parent_dir like #{file_parent_dir} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="file_id">
+    	<selectKey keyProperty="file_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_file
+        	<set>
+        		<if test="file_id != null"> file_id = #{file_id}, </if>
+				<if test="file_owner != null"> file_owner = #{file_owner}, </if>
+				<if test="file_name != null"> file_name = #{file_name}, </if>
+				<if test="file_uri != null"> file_uri = #{file_uri}, </if>
+				<if test="file_type != null"> file_type = #{file_type}, </if>
+				<if test="file_size != null"> file_size = #{file_size}, </if>
+				<if test="file_parent_type != null"> file_parent_type = #{file_parent_type}, </if>
+				<if test="file_parent != null"> file_parent = #{file_parent}, </if>
+				<if test="file_parent_dir != null"> file_parent_dir = #{file_parent_dir} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_file 
+			<where>
+				<if test="file_id != null"> file_id like #{file_id} </if>
+				<if test="file_owner != null"> AND file_owner like #{file_owner} </if>
+				<if test="file_name != null"> AND file_name like #{file_name} </if>
+				<if test="file_uri != null"> AND file_uri like #{file_uri} </if>
+				<if test="file_type != null"> AND file_type like #{file_type} </if>
+				<if test="file_size != null"> AND file_size like #{file_size} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_file
+	       <set>
+				<if test="file_owner != null"> file_owner = #{file_owner}, </if>
+				<if test="file_name != null"> file_name = #{file_name}, </if>
+				<if test="file_uri != null"> file_uri = #{file_uri}, </if>
+				<if test="file_type != null"> file_type = #{file_type}, </if>
+				<if test="file_size != null"> file_size = #{file_size}, </if>
+				<if test="file_parent_type != null"> file_parent_type = #{file_parent_type}, </if>
+				<if test="file_parent != null"> file_parent = #{file_parent}, </if>
+				<if test="file_parent_dir != null"> file_parent_dir = #{file_parent_dir} </if>
+		   </set>
+       where file_id = #{file_id}
+    </update>
+    
+</mapper>

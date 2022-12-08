@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.WorktimeMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildFilesResultMap">
+        select *,CONCAT(',',wt_upload_files,',') as fid 
+         from tb_worktime
+        	<where>
+				<if test="wt_id != null"> wt_id like #{wt_id} </if>
+				<if test="wt_parent_task!= null"> AND wt_parent_task like #{wt_parent_task} </if>
+		  	</where>
+    </select>
+    <resultMap id="ChildFilesResultMap" type="Worktime" >
+    	<collection property="wt_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFileBywt"/>
+    </resultMap>
+    	<select id="selectFileBywt" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fid} like CONCAT('%,',file_id,',%')
+    	</select>
+    	
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_worktime
+        	<set>
+        		<if test="wt_id != null"> wt_id = #{wt_id}, </if>
+				<if test="wt_name != null"> wt_name = #{wt_name}, </if>
+				<if test="wt_creator != null"> wt_creator = #{wt_creator}, </if>
+				<if test="wt_description != null"> wt_description = #{wt_description}, </if>
+				<if test="wt_date != null"> wt_date = #{wt_date}, </if>
+				<if test="wt_hours != null"> wt_hours = #{wt_hours}, </if>
+				<if test="wt_parent_task!= null"> wt_parent_task = #{wt_parent_task}, </if>
+				<if test="wt_upload_files != null"> wt_upload_files = #{wt_upload_files} </if>
+		   </set>      
+        <selectKey keyColumn="wt_id" keyProperty="wt_id" order="AFTER" resultType="long">
+	      select last_insert_id()
+	    </selectKey>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_worktime 
+			<where>
+				<if test="wt_id != null"> wt_id like #{wt_id} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_worktime
+	       <set>
+				<if test="wt_name != null"> wt_name = #{wt_name}, </if>
+				<if test="wt_creator != null"> wt_creator = #{wt_creator}, </if>
+				<if test="wt_description != null"> wt_description = #{wt_description}, </if>
+				<if test="wt_date != null"> wt_date = #{wt_date}, </if>
+				<if test="wt_hours != null"> wt_hours = #{wt_hours}, </if>
+				<if test="wt_upload_files != null"> wt_upload_files = #{wt_upload_files} </if>
+		   </set>
+       where wt_id = #{wt_id}
+    </update>
+    
+</mapper>

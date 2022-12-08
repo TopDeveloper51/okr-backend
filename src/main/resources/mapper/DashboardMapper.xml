@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.DashboardMapper">
+
+	<select id="selectItemMsResult" resultType="TaskMilestone">
+		select  tb_milestone.*, count(*) as resAll, sum(if(task_status not like 1,1,0)) as resNotcomplete , sum(if(task_status not like 1 and task_end_date >= now() ,1,0)) as res10 , sum(if(task_status not like 1 and now() > task_end_date ,1,0)) as res11, sum(if(task_status=1,1,0)) as resComplete, sum(if(task_status = 1 and task_end_date >= task_complete_date ,1,0)) as res20 , sum(if(task_status = 1 and task_complete_date > task_end_date ,1,0)) as res21, 0 as resAvg
+		from tb_milestone
+		left join tb_task on concat(',',ms_task,',') regexp concat(',',task_id,',')
+		where ms_parent_item =#{req_item_id}
+		group by ms_id
+		order by ms_start_date, ms_end_date, created_at	
+	</select>
+	
+	<select id="selectItemOwnerResult" resultType="TaskOwner">
+		select task_owner, employeeName as formatSet, count(*) as res1, sum(if(task_status=1,1,0)) as res2,sum(if(task_status not like 1,1,0)) as res3
+		from tb_task
+		left join tb_user on task_owner = id
+		where task_parent_item =#{req_item_id}
+		group by task_owner		
+	</select>
+	
+	
+	<select id="selectItemTaskResult" resultType="INTEGER">
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id}
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status = 1
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status = 1 and  task_end_date >= task_complete_date
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status = 1 and  task_complete_date > task_end_date
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status not like 1
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status not like 1 and task_end_date >= now() 
+		
+		union all
+		
+		select count(*) as result
+		from tb_task
+		where task_parent_item =#{req_item_id} and task_status not like 1 and now() > task_end_date		
+	</select>
+
+	<select id="selectAnalyzeDpObjectScore" resultType="ObjectScore">	
+		select * from(
+		select departmentOaName as formatSet
+		 , count(ob_id) as resAll
+		 , sum(if(ob_score is null and ob_id is not null,1,0)) as resNull
+		 , sum(if(ob_score>=0 and 0.3>=ob_score,1,0)) as res03
+		 , sum(if(ob_score>0.3 and 0.7>=ob_score,1,0)) as res47
+		 , sum(if(ob_score>0.7 and 1>=ob_score,1,0)) as res81
+		from tb_department
+		left join (select ob_id, ob_score, CONCAT(dp_serial_id,'.',tb_department.id,'.') as serial_id
+		 from tb_object
+		 left join tb_user on tb_user.id = ob_owner
+		 left join tb_department on deptId = tb_department.id
+		 where ob_company_id = 1 and ob_cycle like  #{req_cycle}) as tbobj
+		on serial_id like CONCAT(dp_serial_id,'.',id,'.%')
+		where dp_serial_id like #{req_dp_serial}
+		group by id
+		) as tbobj order by resAll DESC
+	</select>
+	
+	<select id="selectAnalyzeScoreObjects" resultType="Krobject">
+		select tbobj.*, employeeName as ob_owner_name, departmentOaName as ob_department_name
+		from(
+		select *, 1 as ob_score_type
+		from tb_object
+		where ob_score is Null  and ob_company_id =1 and ob_cycle like #{req_cycle}
+		
+		union all
+		
+		select *, 2 as ob_score_type
+		from tb_object
+		where ob_score>=0 and 0.3>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle}
+		
+		union all
+		
+		select *, 3 as ob_score_type
+		from tb_object
+		where ob_score>0.3 and 0.7>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle}
+		
+		union all
+		
+		select *, 4 as ob_score_type
+		from tb_object
+		where ob_score>0.7 and 1>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle}
+		)as tbobj
+		
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} and ob_score_type like #{req_option}
+	</select>
+
+	<select id="selectAnalyzeScoreCounts" resultType="INTEGER">	
+		select count(*) as result 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where ob_company_id =1 and ob_cycle like #{req_cycle} and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(*) as result 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where ob_score is Null and ob_company_id =1 and ob_cycle like #{req_cycle} and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all 
+		
+		select count(*) as result 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where ob_score>=0 and 0.3>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle} and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(*) as result 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where ob_score>0.3 and 0.7>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle} and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(*) as result 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where ob_score>0.7 and 1>=ob_score and ob_company_id =1 and ob_cycle like #{req_cycle} and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+	</select>
+	
+	
+	<select id="selectAnalyzeDpObjectProgress" resultType="ObjectProgress">
+		select departmentOaName as formatSet, pro as result
+		from(select *, avg(ob_progress) as pro
+		from tb_department
+		left join (select ob_id, ob_progress, CONCAT(dp_serial_id,'.',tb_department.id,'.') as serial_id
+		 from tb_object
+		 left join tb_user on tb_user.id = ob_owner
+		 left join tb_department on deptId = tb_department.id
+		 where ob_company_id = 1 and ob_cycle like #{req_cycle}) as tbobj
+		on serial_id like CONCAT(dp_serial_id,'.',id,'.%')
+		where dp_serial_id like #{req_dp_serial}
+		group by id) as tbpro
+		where pro is not NULL
+		order by pro DESC
+	</select>
+	
+	<select id="selectTrackObjectProgress" resultType="ObjectProgress">
+	
+		select formatSet, if(avg(cur_percent/plan_percent)*100 is null,0,avg(cur_percent/plan_percent)*100) as result
+		from(select ob_id, formatSet,case when formatSet>ob_end_date then 100 when ob_start_date>formatSet then -1 else (formatSet - ob_start_date)/(ob_end_date-ob_start_date)*100 end as plan_percent, if(pr_percent is null, 0, pr_percent) as cur_percent
+		from( select tbobj.*
+		from( select *, DATE_SUB( #{req_date},INTERVAL WEEKDAY(#{req_date})+1+7* #{req_index} DAY ) as formatSet
+		from tb_object
+		where ob_company_id =1 and ob_parent_object is Null and ob_cycle like #{req_cycle}  ) as tbobj
+		left join tb_user on ob_owner = tb_user.id
+		left join tb_department on deptId = tb_department.id
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		
+		left join (select *
+		 from tb_progress
+		 where created_at in (
+		  select max(created_at)
+		  from tb_progress
+		  where  DATE_SUB( #{req_date},INTERVAL WEEKDAY(#{req_date})+1+7* #{req_index} DAY ) >= DATE(created_at)
+		 group by pr_parent_type, pr_parent) ) as tbpro
+		on pr_parent_type=0 and pr_parent = ob_id 
+		where formatSet>=ob_start_date
+		) as tbobj
+		
+	</select>
+	
+	<select id="selectTrackExecuteNotProgress" resultType="Execute">
+		select task_id as e_id, task_name as e_name, employeeName as e_owner_name, departmentOaName as e_dp_name,1 as e_type, ob_name as e_ob_name
+		from (select tbtask.*,ob_name
+		from ( select *
+		 from tb_task
+		 where task_status is not Null and task_id not in(select pr_parent
+		  from tb_progress 
+		  where pr_parent_type = 2 and DATE(tb_progress.created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ))  ) as tbtask
+		left join tb_object on task_parent_object = ob_id
+		where ob_cycle like  #{req_cycle} )as tbtask
+		left join tb_user on task_owner = tb_user.id
+		left join tb_department on deptId = tb_department.id
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select item_id as e_id, item_name as e_name, employeeName as e_owner_name, departmentOaName as e_dp_name,0 as e_type, ob_name as e_ob_name
+		from (select tbtask.*,ob_name
+		from ( select *
+		 from tb_item
+		 where item_id not in(select pr_parent
+		  from tb_progress 
+		  where pr_parent_type = 3 and DATE(tb_progress.created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ))  ) as tbtask
+		left join tb_object on CONCAT(',',item_parent_object,',') like CONCAT('%,',ob_id,',%')
+		where ob_cycle like  #{req_cycle} )as tbtask
+		left join tb_user on item_owner = tb_user.id
+		left join tb_department on deptId = tb_department.id
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+	</select>
+	
+	
+	<select id="selectTrackKrNotProgress" resultType="Krobject">
+		select tbobj.*, employeeName as kr_owner_name, departmentOaName as kr_department_name
+		from(select tb_kr.*, ob_name
+		from tb_kr
+		left join tb_object on kr_parent_object = ob_id
+		where ob_cycle like #{req_cycle} and  kr_id not in 
+		(select distinct(pr_parent)
+		from tb_progress
+		where pr_parent_type=1 and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) ) )as tbobj
+		
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+	</select>
+	
+	<select id="selectTrackObjectNotProgress" resultType="Krobject">
+		select tbobj.*, employeeName as ob_owner_name, departmentOaName as ob_department_name
+		from(select *
+		from tb_object
+		where ob_cycle like  #{req_cycle} and  ob_id not in 
+		(select distinct(pr_parent)
+		from tb_progress
+		where pr_parent_type=0 and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) ) )as tbobj
+		
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+	</select>
+	
+	<select id="selectTrackConstants" resultType="INTEGER">
+		(select sum(if(cnt=0,1,0)) as result
+		from (select ob_id, count(pr_id) as cnt
+		from (select tbob.ob_id
+		from(select ob_id, ob_owner
+		from tb_object
+		where ob_cycle like #{req_cycle} and ob_company_id = 1)as tbob
+		left join tb_user on tb_user.id = ob_owner
+			left join tb_department on tb_department.id = deptId 
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} )as tbobdept
+		left join tb_progress on pr_parent_type = 0 and pr_parent = ob_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+		group by ob_id) as obcnt)
+		
+		union 
+		
+		(select sum(if(cnt=0,1,0)) as result
+		from ( select kr_id, count(pr_id) as cnt
+		from ( select tbob.kr_id
+		from(select kr_id,kr_owner from(
+		select ob_id, ob_owner
+		from tb_object
+		where ob_cycle like #{req_cycle} and ob_company_id = 1
+		)as tbob1
+		left join tb_kr on kr_parent_object = ob_id)as tbob
+		left join tb_user on tb_user.id = kr_owner
+			left join tb_department on tb_department.id = deptId 
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} )as tbobdept
+		left join tb_progress on pr_parent_type = 1 and pr_parent = kr_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+		group by kr_id  ) as obcnt)
+		
+		union
+		
+		(select ( (select sum(if(cnt=0,1,0))
+		from ( select task_id, count(pr_id) as cnt
+		from ( select tbob.task_id
+		from(
+		select task_id,task_owner from(
+		select ob_id, ob_owner
+		from tb_object
+		where ob_cycle like #{req_cycle} and ob_company_id = 1
+		)as tbob1
+		left join tb_task on task_parent_object = ob_id
+		)as tbob
+		left join tb_user on tb_user.id = task_owner
+			left join tb_department on tb_department.id = deptId 
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} )as tbobdept
+		left join tb_progress on pr_parent_type = 2 and pr_parent = task_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+		group by task_id  ) as obcnt)
+		+
+		(select sum(if(cnt=0,1,0))
+		from ( select item_id, count(pr_id) as cnt
+		from ( select tbob.item_id
+		from(
+		select distinct(item_id), item_owner from(
+		select ob_id, ob_owner
+		from tb_object
+		where ob_cycle like #{req_cycle} and ob_company_id = 1
+		)as tbob1
+		left join tb_item on CONCAT(',',item_parent_object,',') like CONCAT('%,',ob_id,',%')
+		where item_id is not NULL
+		)as tbob
+		left join tb_user on tb_user.id = item_owner
+			left join tb_department on tb_department.id = deptId 
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} )as tbobdept
+		left join tb_progress on pr_parent_type = 2 and pr_parent = item_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+		group by item_id  ) as obcnt1)
+		
+		) as result)
+	</select>
+	
+	
+	<select id="selectSettingkrNotDissolveUsers" resultType="User">
+		select * from(
+		select tbkritem.*, sum(chk) as chk1
+		from(select tbkr.*, count(item_id) as chk
+		from(select kr_id, departmentOaName, tb_user.id, employeeName
+		from(select kr_id, kr_owner
+		from(select ob_id, ob_name
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}  )as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by id
+		)as tbres
+		where chk1=0
+	</select>
+	<select id="selectSettingkrDissolves" resultType="Kresult">
+		select *
+		from(
+		select tbkritem.*, if(chk+count(task_id)>0,1,0) as chk1
+		from(select tbkr.*, count(item_id) as chk
+		from(select tbobj.*
+		from(select tb_kr.*, ob_name
+		from(select ob_id, ob_name
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}  )as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by kr_id
+		) as tbkr
+		where chk1 like #{req_option}
+		order by kr_parent_object
+	</select>
+	
+	<select id="selectSettingkrDissolve" resultType="INTEGER">
+		
+		select count(*) as result
+		from(
+		select kr_id, chk+count(task_id) as chk
+		from(select kr_id, count(item_id) as chk
+		from(select kr_id
+		from(select kr_id, kr_owner
+		from(select ob_id
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}  )as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by kr_id
+		) as tbkr
+		where chk>0
+		
+		union all
+		
+		select count(*) as result
+		from(
+		select kr_id, chk+count(task_id) as chk
+		from(select kr_id, count(item_id) as chk
+		from(select kr_id
+		from(select kr_id, kr_owner
+		from(select ob_id
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}  )as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by kr_id
+		) as tbkr
+		where chk=0
+		
+		union all
+		
+		select count(*) as result from(
+		select tbkritem.*, sum(chk) as chk1
+		from(select tbkr.*, count(item_id) as chk
+		from(select kr_id, departmentOaName, tb_user.id, employeeName
+		from(select kr_id, kr_owner
+		from(select ob_id, ob_name
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}  )as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by id
+		)as tbres
+		where chk1=0
+	</select>
+
+	<select id="selectSettingObjectNotParentUsers" resultType="User">
+		select tb_user.id,employeeName,departmentOaName
+		from(select distinct(ob_owner)
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is null and ob_owner not in (select ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is not null)
+		)as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+	</select>
+	
+	<select id="selectSettingObjectParents" resultType="Krobject">
+		select tbobj.*
+		from(select *, if(ob_parent_object is null,0,1) as chk
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} and chk like #{req_option}
+	</select>
+	
+	<select id="selectSettingObjectParent" resultType="INTEGER">
+		
+		select count(*) as result
+		from(select ob_id, ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is not null)as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(*) as result
+		from(select ob_id, ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is null)as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(tb_user.id)as result
+		from(select distinct(ob_owner)
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is null and ob_owner not in (select ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} and ob_parent_object is not null)
+		)as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+	</select>
+
+	<select id="selectSettingObjectKrs" resultType="Krobject">
+		select *
+		from(select tbobj.*,case when count(kr_id)=0 then 0 when count(kr_id)>0 and 3>count(kr_id) then 1 when count(kr_id)>2 and 6>count(kr_id) then 3 else 5 end as cnt
+		from(select tbobj.*
+		from(select tb_object.*
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		where cnt like #{req_option}
+	</select>
+	
+	<select id="selectSettingObjectKr" resultType="INTEGER">
+		select count(*) as result
+		from(select tbobj.*, count(kr_id) as cnt
+		from(select ob_id
+		from(select ob_id,ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		
+		union all
+		
+		select count(*) as result
+		from(select tbobj.*, count(kr_id) as cnt
+		from(select ob_id
+		from(select ob_id,ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		where cnt=0
+		
+		union all
+		
+		select count(*) as result
+		from(select tbobj.*, count(kr_id) as cnt
+		from(select ob_id
+		from(select ob_id,ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		where cnt>0 and 3>cnt
+		
+		union all
+		
+		select count(*) as result
+		from(select tbobj.*, count(kr_id) as cnt
+		from(select ob_id
+		from(select ob_id,ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		where cnt>2 and 6>cnt
+		
+		union all
+		
+		select count(*) as result
+		from(select tbobj.*, count(kr_id) as cnt
+		from(select ob_id
+		from(select ob_id,ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle} )as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbobj
+		left join tb_kr on kr_parent_object = ob_id
+		group by ob_id) as tbobj
+		where cnt>5
+		
+	</select>
+
+	<select id="selectSettingUserObjects" resultType="User">
+		select *
+		from(select tbuser.*, case when count(ob_id)>5 then 5 when count(ob_id)=0 then 0 else 1 end as cnt
+		from(select tb_user.id, employeeName, departmentOaName
+		from tb_user
+		left join tb_department on deptId = tb_department.id
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbuser
+		left join tb_object on ob_owner = id and ob_cycle like #{req_cycle}
+		group by id)as tbuser
+		where cnt like #{req_option}
+	</select>
+	
+	<select id="selectSettingUserObject" resultType="INTEGER">
+		select count(tb_user.id) as result
+		from tb_user
+		left join tb_department on tb_department.id = deptId
+		where tb_user.status=1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		
+		union all
+		
+		select count(*) as result
+		from(select tbuser.*, case when count(ob_id)>5 then 5 when count(ob_id)=0 then 0 else 1 end as cnt
+		from(select tb_user.id, employeeName, departmentOaName
+		from tb_user
+		left join tb_department on deptId = tb_department.id
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbuser
+		left join tb_object on ob_owner = id and ob_cycle like #{req_cycle}
+		group by id)as tbres
+		where cnt=0
+		
+		union all
+		
+		select count(*) as result
+		from(select tbuser.*, case when count(ob_id)>5 then 5 when count(ob_id)=0 then 0 else 1 end as cnt
+		from(select tb_user.id, employeeName, departmentOaName
+		from tb_user
+		left join tb_department on deptId = tb_department.id
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbuser
+		left join tb_object on ob_owner = id and ob_cycle like #{req_cycle}
+		group by id)as tbres
+		where cnt=1
+		
+		union all
+		
+		select count(*) as result
+		from(select tbuser.*, case when count(ob_id)>5 then 5 when count(ob_id)=0 then 0 else 1 end as cnt
+		from(select tb_user.id, employeeName, departmentOaName
+		from tb_user
+		left join tb_department on deptId = tb_department.id
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbuser
+		left join tb_object on ob_owner = id and ob_cycle like #{req_cycle}
+		group by id)as tbres
+		where cnt=5
+	</select>
+	
+    <select id="selectSettingRate" resultType="FLOAT">
+    
+    	select if(result is null, 0,result) as result
+		from(
+    	select sum(chk)/count(*)*100 as result
+		from (select tb_user.id,deptId, if(tb_user.id in(
+		select distinct(ob_owner)
+		from tb_object
+		where ob_cycle like #{req_cycle} ),1,0) as chk
+		from tb_user
+		left join tb_department on tb_department.id = deptId
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial} ) as tbuser
+		)as tbres
+		
+		union all
+		
+		select if(result is null, 0,result) as result
+		from(
+		select sum(chk)/count(*)*100 as result
+		from (select id,deptId, if(id 
+		in(
+		select distinct(ob_owner)
+		from tb_object
+		where ob_cycle like #{req_cycle} and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) >  DATE(created_at)
+		),1,0) as chk
+		from tb_user
+		where status = 1 ) as tbuser
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		)as tbres
+		
+		union all
+		
+		select if(result is null, 0,result) as result
+		from(
+		select sum(chk)/count(*)*100 as result
+		from (select ob_id, if(ob_parent_object>0,1,0) as chk, ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle}) as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		)as tbres
+		
+		union all
+		
+		select if(result is null, 0,result) as result
+		from(
+		select sum(chk)/count(*)*100 as result
+		from (select ob_id, if(ob_parent_object>0 and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) >  DATE(created_at),1,0) as chk, ob_owner
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle}) as tbobj
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial}
+		)as tbres
+		
+		union all
+		
+		select if(result is null, 0,result) as result
+		from(
+		select sum(if(chk>0,1,0))/count(*)*100 as result
+		from(select kr_id, chk+count(task_id) as chk
+		from(select kr_id, count(item_id) as chk
+		from(select kr_id
+		from(select kr_id, kr_owner
+		from(select ob_id
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle}) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by kr_id)as tbres
+		)as tbres
+		
+		union all
+		
+		select if(result is null, 0,result) as result
+		from(
+		select sum(if(chk>0 and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) >  DATE(tbres.created_at),1,0))/count(*)*100 as result
+		from(select kr_id, chk+count(task_id) as chk, tbkritem.created_at
+		from(select kr_id, count(item_id) as chk, tbkr.created_at
+		from(select kr_id, tbobj.created_at
+		from(select kr_id, kr_owner, created_at
+		from(select ob_id
+		from tb_object
+		where ob_company_id=1 and ob_cycle like #{req_cycle}) as tbobj
+		left join tb_kr on kr_parent_object = ob_id) as tbobj
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId
+		where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{req_dp_serial})as tbkr
+		left join tb_item on item_parent_kr = kr_id
+		group by kr_id) as tbkritem
+		left join tb_task on task_parent_kr = kr_id
+		group by kr_id)as tbres
+		)as tbres
+    </select>
+    
+    <!--查询所有-->
+    <select id="selectSettingRate1" resultType="Dashboard">
+        
+        select *
+from
+(select
+
+		(select sum(fcount)/count(*)*100 as fill_rate from (
+		select tb_user.id, dp_serial_id, (if(count(ob_id)>0,1,0)) as fcount from tb_user
+		left join tb_department on deptId = tb_department.id
+		left join tb_object on ob_owner = tb_user.id and ob_cycle like '%'
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by tb_user.id
+		) as tb_fill) as fill_rate ,
+				
+		(select sum(fcount)/count(*)*100 as fill_rate from (
+		select tb_user.id, dp_serial_id, (if(count(ob_id)>0,1,0)) as fcount from tb_user
+		left join tb_department on deptId = tb_department.id
+		left join tb_object on ob_owner = tb_user.id and ob_cycle like '%' and CURDATE()>DATE(tb_object.created_at)
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by tb_user.id
+		) as tb_fill) -
+		(select sum(fcount)/count(*)*100 as fill_rate from (
+		select tb_user.id, dp_serial_id, (if(count(ob_id)>0,1,0)) as fcount from tb_user
+		left join tb_department on deptId = tb_department.id
+		left join tb_object on ob_owner = tb_user.id and ob_cycle like '%' and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) >  DATE(tb_object.created_at)
+		where tb_user.status = 1 and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by tb_user.id
+		) as tb_fill) as fill_tendency_rate,
+				
+		(select sum(if(ob_parent_object>0,1,0))/count(*)*100 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId 
+		where ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%') 
+		as rel_obj_rate,
+		
+		
+		(select sum(if(ob_parent_object>0 and  CURDATE() > DATE(tb_object.created_at) ,1,0))/count(*)*100 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId 
+		where ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%' )-
+		(select sum(if(ob_parent_object>0 and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) >  DATE(tb_object.created_at),1,0))/count(*)*100 
+		from tb_object
+		left join tb_user on tb_user.id = ob_owner
+		left join tb_department on tb_department.id = deptId 
+		where ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'  )
+		 as rel_obj_tendency_rate,
+		 
+		(select sum(edis)/count(*)*100 as e_disolve from (select if(count(item_id)+count(task_id)>0,1,0) as edis
+		from tb_kr
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId 
+		left join tb_object on kr_parent_object = ob_id
+		left join tb_item on item_parent_kr = kr_id
+		left join tb_task on task_parent_kr = kr_id
+		where kr_owner is not NULL and ob_id is not NULL and ob_company_id = 1 and ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by kr_id) as kr_filter) as kr_disolve_rate,
+		
+		(select sum(edis)/count(*)*100 as e_disolve from (select if(count(item_id)+count(task_id)>0 and  CURDATE()>DATE(tb_object.created_at) ,1,0) as edis
+		from tb_kr
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId 
+		left join tb_object on kr_parent_object = ob_id 
+		left join tb_item on item_parent_kr = kr_id
+		left join tb_task on task_parent_kr = kr_id
+		where kr_owner is not NULL and ob_id is not NULL and ob_company_id = 1 and ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by kr_id) as kr_filter)-
+		(select sum(edis)/count(*)*100 as e_disolve from (select if(count(item_id)+count(task_id)>0 and DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY )> DATE(tb_object.created_at),1,0) as edis
+		from tb_kr
+		left join tb_user on tb_user.id = kr_owner
+		left join tb_department on tb_department.id = deptId 
+		left join tb_object on kr_parent_object = ob_id
+		left join tb_item on item_parent_kr = kr_id
+		left join tb_task on task_parent_kr = kr_id
+		where kr_owner is not NULL and ob_id is not NULL and ob_company_id = 1 and ob_cycle like '%' and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		group by kr_id) as kr_filter) as kr_disolve_tendency_rate
+) as tbrate,
+
+(select count(id) as all_users, sum(if(cnt>0 and 6>cnt,1,0)) as users_1_5, sum(if(cnt>5,1,0)) as users_5_x, sum(if(cnt=0,1,0)) as users_0
+		from(select id,count(ob_id) as cnt
+		from(select tb_user.id
+		from tb_user
+		left join tb_department on tb_department.id = deptId and CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%'
+		where tb_user.status = 1 and user_company_id = 1 and dp_serial_id is NOT NULL and tb_department.id is not NULL) as userid
+		left join tb_object on ob_owner = id
+		group by id) as userobcount) as tbuserob,
+		
+
+(select count(*) as all_objs, sum(if(cnt>0 and 3>cnt,1,0)) as obj_1_2, sum(if(cnt>2 and 6>cnt,1,0)) as obj_3_5, sum(if(cnt>5,1,0)) as obj_5_x, sum(if(cnt=0,1,0)) as obj_0
+from (select ob_id, count(kr_id) as cnt
+from (select ob_id
+from (select *
+from tb_object
+where ob_company_id =1 and ob_cycle like '%')as tbobj
+left join tb_user on ob_owner = tb_user.id
+left join tb_department on deptId = tb_department.id
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%') as tbobj
+left join tb_kr on kr_parent_object = ob_id
+group by ob_id) as tcnt) as tbobjkr,
+
+(select count(tb_object.ob_id) as has_ob_parent, count(*) - count(tb_object.ob_id) as not_ob_parent
+from (select ob_id, ob_parent_object
+from tb_object
+where ob_company_id = 1) as tbobj
+left join tb_object on tb_object.ob_id = tbobj.ob_parent_object) as tbobpa,
+
+(select sum(if(kr_item_task=0,1,0)) as kr_not_sum, sum(if(kr_item_task=0,0,1)) as kr_sum
+from(
+select kr_items+count(task_id) as kr_item_task
+from(select kr_id, count(item_id) as kr_items
+from(select tbkrob.*
+from (select tbkr.*
+from (select kr_id, kr_parent_object, kr_owner
+from tb_kr
+where kr_owner is not NULL) as tbkr
+left join tb_object on kr_parent_object = ob_id
+where ob_company_id = 1 and ob_cycle like '%') as tbkrob
+left join tb_user on kr_owner = tb_user.id
+left join tb_department on deptId = tb_department.id
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%') as tbkrpaowner
+left join tb_item on item_parent_kr = kr_id
+group by kr_id)as kritem
+left join tb_task on task_parent_kr =kr_id
+group by kr_id) as tbsum) as tbsum
+		        
+    </select>
+    
+    <select id="selectYiZhouRate" resultType="Dashboard">
+    
+    	select *
+from
+(select sum(if(cnt=0,1,0)) as sum_ob_not_updated
+from (select ob_id, count(pr_id) as cnt
+from (select tbob.ob_id
+from(select ob_id, ob_owner
+from tb_object
+where ob_cycle like '%' and ob_company_id = 1)as tbob
+left join tb_user on tb_user.id = ob_owner
+	left join tb_department on tb_department.id = deptId 
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%' )as tbobdept
+left join tb_progress on pr_parent_type = 0 and pr_parent = ob_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+group by ob_id) as obcnt)as tbobsum,
+
+(select sum(if(cnt=0,1,0)) as sum_kr_not_updated
+from ( select kr_id, count(pr_id) as cnt
+from ( select tbob.kr_id
+from(select kr_id,kr_owner from(
+select ob_id, ob_owner
+from tb_object
+where ob_cycle like '%' and ob_company_id = 1
+)as tbob1
+left join tb_kr on kr_parent_object = ob_id)as tbob
+left join tb_user on tb_user.id = kr_owner
+	left join tb_department on tb_department.id = deptId 
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%' )as tbobdept
+left join tb_progress on pr_parent_type = 1 and pr_parent = kr_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+group by kr_id  ) as obcnt) as krcnt,
+
+(select ( (select sum(if(cnt=0,1,0))
+from ( select task_id, count(pr_id) as cnt
+from ( select tbob.task_id
+from(
+select task_id,task_owner from(
+select ob_id, ob_owner
+from tb_object
+where ob_cycle like '%' and ob_company_id = 1
+)as tbob1
+left join tb_task on task_parent_object = ob_id
+)as tbob
+left join tb_user on tb_user.id = task_owner
+	left join tb_department on tb_department.id = deptId 
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%' )as tbobdept
+left join tb_progress on pr_parent_type = 2 and pr_parent = task_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+group by task_id  ) as obcnt)
++
+(select sum(if(cnt=0,1,0))
+from ( select item_id, count(pr_id) as cnt
+from ( select tbob.item_id
+from(
+select distinct(item_id), item_owner from(
+select ob_id, ob_owner
+from tb_object
+where ob_cycle like '%' and ob_company_id = 1
+)as tbob1
+left join tb_item on CONCAT(',',item_parent_object,',') like CONCAT('%,',ob_id,',%')
+where item_id is not NULL
+)as tbob
+left join tb_user on tb_user.id = item_owner
+	left join tb_department on tb_department.id = deptId 
+where CONCAT(dp_serial_id,'.',tb_department.id,'.') like '%' )as tbobdept
+left join tb_progress on pr_parent_type = 2 and pr_parent = item_id and DATE(created_at)>= DATE_SUB(CURDATE(),INTERVAL WEEKDAY(CURDATE()) DAY ) 
+group by item_id  ) as obcnt1)
+
+) as sum_item_task_not_updated) as test2
+
+    </select >
+    
+    
+</mapper>

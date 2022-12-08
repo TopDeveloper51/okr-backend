@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.IntercomMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultMap="ChildFilesResultMap">
+        select tb_intercom.*
+		,ic_reply_ic as replyid
+		,CONCAT(',',ic_uploaded_file,',') as fid
+		,user_in.employeeName as ic_sender_name 
+		,user_out.employeeName as ic_receiver_name
+		from tb_intercom
+		left join tb_user as user_in on ic_sender = user_in.id
+		left join tb_user as user_out on ic_receiver = user_out.id
+        	<where>
+				<if test="ic_id != null"> ic_id like #{ic_id} </if>
+				<if test="ic_sender != null"> AND ic_sender like #{ic_sender} </if>
+				<if test="ic_receiver != null"> AND ic_receiver like #{ic_receiver} </if>
+				<if test="ic_description != null"> AND ic_description like #{ic_description} </if>
+				<if test="ic_parent_type != null"> AND ic_parent_type like #{ic_parent_type} </if>
+				<if test="ic_parent_type == 10">
+					 OR ( ic_sender like #{ic_receiver}  AND ic_receiver like #{ic_sender}  AND ic_parent_type like 10 )
+				</if>
+				<if test="ic_parent != null"> AND ic_parent like #{ic_parent} </if>
+				<if test="ic_reply_ic != null"> AND ic_reply_ic like #{ic_reply_ic} </if>
+				<if test="ic_thumbup != null"> AND ic_thumbup like #{ic_thumbup} </if>
+		  	</where>
+		 order by created_at ASC
+    </select>
+    <resultMap id="ChildFilesResultMap" type="Intercom" >
+    	<collection property="ic_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFileByIntercom"/>
+    	<collection property="ic_replys" javaType="ArrayList" column="replyid" ofType="Intercom" select="selectReplyIntercom"/>
+    </resultMap>
+    	<select id="selectReplyIntercom" resultMap="ChildFilesResultMap">
+	        select tb_intercom.*
+				,user_in.employeeName as ic_sender_name 
+				,user_out.employeeName as ic_receiver_name
+			from tb_intercom
+			left join tb_user as user_in on ic_sender = user_in.id
+			left join tb_user as user_out on ic_receiver = user_out.id
+	        where  ic_id like #{replyid}
+    	</select>
+    	<select id="selectFileByIntercom" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fid} like CONCAT('%,',file_id,',%')
+    	</select>
+    	
+    	
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="ic_id">
+		<selectKey keyProperty="ic_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_intercom 
+        	<set>
+        		<if test="ic_id != null"> ic_id = #{ic_id}, </if>
+				<if test="ic_sender != null"> ic_sender = #{ic_sender}, </if>
+				<if test="ic_receiver != null"> ic_receiver = #{ic_receiver}, </if>
+				<if test="ic_description != null"> ic_description = #{ic_description}, </if>
+				<if test="ic_parent_type != null"> ic_parent_type = #{ic_parent_type}, </if>
+				<if test="ic_parent != null"> ic_parent = #{ic_parent}, </if>
+				<if test="ic_reply_ic != null"> ic_reply_ic = #{ic_reply_ic}, </if>
+				<if test="ic_uploaded_file != null"> ic_uploaded_file = #{ic_uploaded_file}, </if>
+				<if test="ic_thumbup != null"> ic_thumbup = #{ic_thumbup} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_intercom 
+			<where>
+				<if test="ic_id != null"> ic_id like #{ic_id} </if>
+				<if test="ic_sender != null"> AND ic_sender like #{ic_sender} </if>
+				<if test="ic_receiver != null"> AND ic_receiver like #{ic_receiver} </if>
+				<if test="ic_description != null"> AND ic_description like #{ic_description} </if>
+				<if test="ic_parent_type != null"> AND ic_parent_type like #{ic_parent_type} </if>
+				<if test="ic_parent != null"> AND ic_parent like #{ic_parent} </if>
+				<if test="ic_reply_ic != null"> AND ic_reply_ic like #{ic_reply_ic} </if>
+				<if test="ic_thumbup != null"> AND ic_thumbup like #{ic_thumbup} </if>
+		  	</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_intercom
+	       <set>
+				<if test="ic_sender != null"> ic_sender = #{ic_sender}, </if>
+				<if test="ic_receiver != null"> ic_receiver = #{ic_receiver}, </if>
+				<if test="ic_description != null"> ic_description = #{ic_description}, </if>
+				<if test="ic_parent_type != null"> ic_parent_type = #{ic_parent_type}, </if>
+				<if test="ic_parent != null"> ic_parent = #{ic_parent}, </if>
+				<if test="ic_reply_ic != null"> ic_reply_ic = #{ic_reply_ic}, </if>
+				<if test="ic_uploaded_file != null"> ic_uploaded_file = #{ic_uploaded_file}, </if>
+				<if test="ic_thumbup != null"> ic_thumbup = #{ic_thumbup} </if>
+		   </set>
+       where ic_id = #{ic_id}
+    </update>
+    
+</mapper>

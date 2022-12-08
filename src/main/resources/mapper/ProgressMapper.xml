@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.ProgressMapper">
+    
+    <select id="selectByFields" resultMap="ChildFilesResultMap">
+        select *
+        	,CONCAT(',',pr_uploaded_file,',') as fid  
+        from tb_progress
+        left join tb_user on pr_creator = tb_user.id
+        left join tb_object on pr_parent_type = 0 and pr_parent = ob_id 
+        <where> 
+			<if test="pr_id != null"> pr_id like #{pr_id} </if>
+			<if test="pr_parent != null"> AND pr_parent like #{pr_parent} </if>
+			<if test="pr_creator != null"> AND pr_creator like #{pr_creator} </if>
+			<if test="pr_parent_type != null"> AND pr_parent_type like #{pr_parent_type} </if>
+			<if test="pr_percent != null"> AND pr_percent like #{pr_percent} </if>
+			<if test="pr_status != null"> AND pr_status like #{pr_status} </if>
+			<if test="pr_description != null"> AND pr_description like #{pr_description} </if>
+		</where>
+		order by tb_progress.created_at DESC
+    </select>
+    
+   	<resultMap id="ChildFilesResultMap" type="TProgress" >
+   		<collection property="pr_files" javaType="ArrayList" column="fid" ofType="TFile" select="selectFileByPr"/>
+    </resultMap>
+    	<select id="selectFileByPr" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fid} like CONCAT('%,',file_id,',%')
+    	</select>
+    
+    
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="pr_id">
+		<selectKey keyProperty="pr_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_progress 
+        	<set>
+	        	<if test="pr_id != null"> pr_id = #{pr_id}, </if>
+				<if test="pr_parent != null"> pr_parent = #{pr_parent}, </if>
+				<if test="pr_creator != null"> pr_creator = #{pr_creator}, </if>
+				<if test="pr_parent_type != null"> pr_parent_type = #{pr_parent_type}, </if>
+				<if test="pr_percent != null"> pr_percent = #{pr_percent}, </if>
+				<if test="pr_up_percent != null"> pr_up_percent = #{pr_up_percent}, </if>
+				<if test="pr_status != null"> pr_status = #{pr_status}, </if>
+				<if test="pr_start_date != null"> pr_start_date = #{pr_start_date}, </if>
+				<if test="pr_end_date != null"> pr_end_date = #{pr_end_date}, </if>
+				<if test="pr_uploaded_file != null"> pr_uploaded_file = #{pr_uploaded_file}, </if>
+				<if test="pr_description != null"> pr_description = #{pr_description}</if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_progress
+       <where> 
+			<if test="pr_id != null"> pr_id like #{pr_id} </if>
+			<if test="pr_parent != null"> AND pr_parent like #{pr_parent} </if>
+			<if test="pr_creator != null"> AND pr_creator like #{pr_creator} </if>
+			<if test="pr_parent_type != null"> AND pr_parent_type like #{pr_parent_type} </if>
+			<if test="pr_percent != null"> AND pr_percent like #{pr_percent} </if>
+			<if test="pr_status != null"> AND pr_status like #{pr_status} </if>
+			<if test="pr_description != null"> AND pr_description like #{pr_description} </if>
+		</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_progress
+	       <set>
+		      <if test="pr_parent != null"> pr_parent = #{pr_parent}, </if>
+		      <if test="pr_creator != null"> pr_creator = #{pr_creator}, </if>
+		      <if test="pr_parent_type != null"> pr_parent_type = #{pr_parent_type}, </if>
+		      <if test="pr_percent != null"> pr_percent = #{pr_percent}, </if>
+		      <if test="pr_status != null"> pr_status = #{pr_status}, </if>
+			  <if test="pr_start_date != null"> pr_start_date = #{pr_start_date}, </if>
+			  <if test="pr_end_date != null"> pr_end_date = #{pr_end_date}, </if>
+			  <if test="pr_uploaded_file != null"> pr_uploaded_file = #{pr_uploaded_file}, </if>
+		      <if test="pr_description != null"> pr_description = #{pr_description} </if>
+		   </set>
+       where pr_id = #{pr_id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.KrobjectMapper">
+	
+	<!--@@@@@@@@@@@@@@@@@@  Library @@@@@@@@@@@@@@@@@@@@@@@@@-->
+	<select id="getLibraryMenu" resultType="Krobject">
+        select *  
+        from tb_object 
+        where
+			ob_company_id = 0 and ob_parent_object is NULL 
+    </select>
+    
+    
+   	<select id="getLibraryByCriteria" resultMap="LibraryMap">
+        select *  
+        	,ob_id as krid
+        from tb_object 
+        <where>
+        	ob_company_id = 0   
+        	AND ob_parent_object IS NOT NULL
+        	<if test="ob_id != null">AND ob_parent_object like #{ob_id} </if>
+        </where>
+        <if test="ob_id == null">group by ob_parent_object </if>
+    </select>
+    <resultMap id="LibraryMap" type="Krobject" >
+    	<collection property="ob_results" javaType="ArrayList" column="krid" ofType="Kresult" select="selectKrTaskItemByObject"/>
+    </resultMap>
+	
+    <!--@@@@@@@@@@@@@@@@@@@  getAllObjectByCriteria @@@@@@@@@@@@@@@@@@@@@-->     
+    <select id="getAllObjectByCriteria" resultMap="ObjectResultMap"> 
+    	select *
+    	from(
+    
+    	select tbobj.*
+    		, GROUP_CONCAT(tb_department.departmentOaName) as ob_visibility_dp_names 
+    	from (
+	    	select tbobj.*
+	    		, GROUP_CONCAT(tb_user.employeeName) as ob_visibility_user_names 
+	    	from (
+    		    	
+        select tbobj.* 
+        	,ob_parent_object as pobj_id 
+        	,ob_id as krid
+        	,ob_id as paid
+        	,ob_id as pr_parent
+        	,ob_owner as owner_id
+        	,CONCAT(',',ob_participant,',') as pid
+        	,CONCAT(',',ob_attention,',') as aid
+        from 
+        (
+        
+select *
+from (select tbobj.*, GROUP_CONCAT( CONCAT(dp_serial_id,'.',id,'.') separator '|') as ob_dp_serials
+,(
+select group_concat(distinct(tb_kr.kr_owner)) as test
+from tb_kr
+where tb_kr.kr_parent_object = tbobj.ob_id
+group by kr_parent_object
+) as kr_owners
+,(
+select group_concat(distinct(tb_task.task_owner)) as test
+from tb_task
+where tb_task.task_parent_object = tbobj.ob_id
+group by task_parent_object
+) as task_owners
+,(
+select group_concat(distinct(tb_user.id)) as test
+from tb_user
+where tb_user.user_superior = tbobj.ob_owner
+group by tb_user.user_superior
+) as ob_superiors
+
+ from (select tbobj.*, CONCAT(dp_serial_id,'.') as owner_dp_serial, user_superior
+ from(select *
+  from tb_object
+  where ob_company_id = #{ob_company_id} and ob_mstatus = 0
+  ) as tbobj
+ left join tb_user on ob_owner = tb_user.id
+ left join tb_department on deptId = tb_department.id) as tbobj
+left join tb_department on ob_visible_type=3 and CONCAT(ob_visible_range,',') like CONCAT('%d',id,',%')
+group by ob_id)as tbobj
+
+where ob_visible_type=0 
+ or (ob_visible_type=1 and ( CONCAT(',',kr_owners,',') like CONCAT('%,',#{operator.id},',%') or CONCAT(',',task_owners,',') like CONCAT('%,',#{operator.id},',%')  )) 
+ or (ob_visible_type=2 and ob_owner like #{operator.user_superior} )
+ or (ob_visible_type=3 and (CONCAT(ob_visible_range,',')like CONCAT('%u',#{operator.id},',%') or #{operator.user_dp_serial} regexp ob_dp_serials  )) 
+ or ( #{operator.user_role}='creator' or ob_creator=#{operator.id} or user_superior=#{operator.id} or CONCAT(',',ob_participant,',' ) like CONCAT('%,',#{operator.id},',%' ) or ob_owner=#{operator.id} or CONCAT(',',ob_attention,',' ) like CONCAT('%,',#{operator.id},',%' ) )  
+        
+        )as tbobj
+        	left join tb_user on tb_user.id = ob_owner
+			left join tb_department on deptId = tb_department.id
+        <where>
+        	<if test="ob_id != null">ob_id like #{ob_id} </if>
+			<if test="ob_name != null"> AND ob_name like #{ob_name} </if>
+			<if test="ob_owner != null"> AND  ob_owner like #{ob_owner} </if>
+			<if test="ob_creator != null"> AND ob_creator like #{ob_creator} </if>
+			<if test="ob_cycle != null"> AND ob_cycle like #{ob_cycle} </if>
+			<if test="ob_start_date != null"> AND ob_start_date like #{ob_start_date} </if>
+			<if test="ob_end_date != null"> AND ob_end_date like #{ob_end_date} </if>
+			<if test="ob_company_id != null"> AND ob_company_id like #{ob_company_id} </if>
+			<if test="ob_parent_object != null"> AND ob_parent_object like #{ob_parent_object} </if>
+			<if test="ob_status != null"> AND ob_status like #{ob_status} </if>
+			<if test="ob_progress != null"> AND ob_progress like #{ob_progress} </if>
+			<if test="ob_auto_progress != null"> AND ob_auto_progress like #{ob_auto_progress} </if>
+			<if test="ob_visible_type != null"> AND ob_visible_type like #{ob_visible_type} </if>
+			<if test="ob_visible_range != null"> AND ob_visible_range like #{ob_visible_range} </if>
+			<if test="ob_participant != null"> AND (CONCAT(',',ob_participant,',') like #{ob_participant} or ( CONCAT(',',kr_owners,',') like #{ob_participant} ) ) </if>
+			<if test="ob_attention != null"> AND CONCAT(',',ob_attention,',') like #{ob_attention} </if>
+			<if test="ob_operator != null"> AND CONCAT('dp',dp_serial_id,'.',tb_department.id,'.') like #{ob_operator} </if>
+			<if test="ob_type != null"> AND ob_type like #{ob_type} </if>
+			
+			<if test="ob_participant != null">
+				<if test="ob_owner != null">
+					 OR (CONCAT(',',ob_participant,',',kr_owners,',') like #{ob_participant} OR ob_owner like #{ob_owner})
+				</if>	 
+			</if>
+			
+        </where>
+	                
+        	)as tbobj
+		        left join tb_user on CONCAT(',',ob_visible_range,',') like CONCAT('%u',tb_user.id,',%')
+		        group by ob_id
+		)as tbobj
+        left join tb_department on CONCAT(',',ob_visible_range,',') like CONCAT('%d',tb_department.id,',%')
+        group by ob_id
+        
+        ) as tbobj
+        <if test="ob_sortby != null">
+        
+		  	<choose>
+	  			<when test="ob_sortby.contains('created_at')">
+	  				order by created_at
+		  		</when>
+		  		<when test="ob_sortby.contains('updated_at')">
+	  				order by updated_at 	
+		  		</when>
+		  		<otherwise>
+		  			order by created_at
+		  		</otherwise>
+	  		</choose>
+	  		
+	  		<choose>
+	  			<when test="ob_sortby.contains('ASC')">
+	  				ASC
+		  		</when>
+		  		<when test="ob_sortby.contains('DESC')">
+	  				DESC 	
+		  		</when>
+		  		<otherwise>
+		  			ASC
+		  		</otherwise>
+	  		</choose>
+	  		
+		</if>
+		<if test="ob_sortby == null">
+			order by created_at ASC
+		</if>
+    </select>
+    
+    <resultMap id="ObjectResultMap" type="Krobject" >
+    	<collection property="ob_results" javaType="ArrayList" column="krid" ofType="Kresult" select="selectKrTaskItemByObject"/>
+    	<collection property="ob_parent_objects" javaType="Krobject" column="pobj_id" ofType="Krobject" select="selectParentObject"/>
+    	<collection property="ob_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+    	<collection property="ob_participants" javaType="ArrayList" column="pid" ofType="User" select="selectParticipantUser"/>
+    	<collection property="ob_attentions" javaType="ArrayList" column="aid" ofType="User" select="selectAttentionUser"/>
+    	<collection property="ob_child_objects" javaType="ArrayList" column="paid" ofType="Krobject" select="selectChildObjects"/>
+    	<collection property="ob_recent_pr" javaType="Tprogress" column="pr_parent" ofType="Tprogress" select="selectRecentProgress"/>
+    	
+    </resultMap>
+    	<select id="selectRecentProgress" resultType="Tprogress">
+	        select tb_progress.*, employeeName
+				from tb_progress
+				left join tb_user on pr_creator = tb_user.id
+				where pr_parent = #{pr_parent} and pr_parent_type=0
+				order by created_at DESC
+				limit 1
+	    </select>
+    	<select id="selectChildObjects" resultMap="ObjectChildObjectMap">
+	        select *
+	        	,ob_parent_object as pobj_id 
+	        	,ob_id as krid
+	        	,ob_id as paid
+	        	,ob_owner as owner_id
+	        	,CONCAT(',',ob_participant,',') as pid
+	        	,CONCAT(',',ob_attention,',') as aid
+	        from tb_object
+	        where ob_parent_object = #{paid} 
+	    </select>
+	    	<resultMap id="ObjectChildObjectMap" type="Krobject" >
+		    	<collection property="ob_results" javaType="ArrayList" column="krid" ofType="Kresult" select="selectKrByObject"/>
+		    	<collection property="ob_parent_objects" javaType="Krobject" column="pobj_id" ofType="Krobject" select="selectParentObject"/>
+		    	<collection property="ob_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+		    	<collection property="ob_participants" javaType="ArrayList" column="pid" ofType="User" select="selectParticipantUser"/>
+		    	<collection property="ob_attentions" javaType="ArrayList" column="aid" ofType="User" select="selectAttentionUser"/>
+		    	<collection property="ob_child_objects" javaType="ArrayList" column="paid" ofType="Krobject" select="selectChildObjects"/>
+		    </resultMap>
+	    
+    	<select id="selectParticipantUser" resultType="User">
+	        select id,employeeName,deptId from tb_user 
+	        	where #{pid} like CONCAT('%,',id,',%') 
+	    </select>
+	    <select id="selectAttentionUser" resultType="User">
+	        select id,employeeName,deptId from tb_user 
+	        	where #{aid} like CONCAT('%,',id,',%') 
+	    </select>
+	    <select id="selectKrByObject" resultMap="ParentKrResultMap">
+	        select *,
+	        	kr_owner as owner_id 
+	        	,kr_id as pr_parent
+				,(
+					select pr_status
+					from tb_progress
+					where kr_id = pr_parent and pr_parent_type =1 and pr_status is not Null
+					order by tb_progress.created_at DESC
+					limit 1
+				)as kr_completion_status
+	        from tb_kr 
+	        	where kr_parent_object = #{krid}
+	        ORDER BY kr_order ASC
+	    </select>
+	    <resultMap id="ParentKrResultMap" type="com.apis.okre.entity.Kresult" >
+	    	<collection property="kr_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+	    	<collection property="kr_recent_pr" javaType="Tprogress" column="pr_parent" ofType="Tprogress" select="selectRecentProgressKR"/>
+	    </resultMap>
+	    <select id="selectRecentProgressKR" resultType="Tprogress">
+	        select tb_progress.*, employeeName
+				from tb_progress
+				left join tb_user on pr_creator = tb_user.id
+				where pr_parent = #{pr_parent} and pr_parent_type=1
+				order by created_at DESC
+				limit 1
+	    </select>
+	    <select id="selectOwnerUser" resultType="com.apis.okre.entity.User">
+	        select employeeName,deptId,user_company_id,departmentOaName,CONCAT(dp_serial_id,'.',tb_department.id) as user_dp_serial 
+	        from tb_user 
+	        left join tb_department on tb_department.id = tb_user.deptId 
+	        	where tb_user.id = #{owner_id}
+	        	
+	    </select>
+	    <select id="selectParentObject" resultMap="ParentObjectResultMap">
+	        select *, 
+	        	ob_id as krid,
+	        	ob_owner as owner_id
+	        from tb_object 
+	        	where ob_id = #{pobj_id} and ob_mstatus = 0
+	    </select>
+	    <resultMap id="ParentObjectResultMap" type="Krobject" >
+	    	<collection property="ob_results" javaType="ArrayList" column="krid" ofType="Kresult" select="selectKrByObject"/>
+	    	<collection property="ob_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+	    </resultMap>
+    
+    <!--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+    
+    <select id="getOneObjectById" resultMap="ObjectResultTaskItemMap">
+        select *
+        	,ob_id as krid
+        	,CONCAT('%,',ob_id,',%') as iid
+        	,ob_id as tid
+        	,ob_parent_object as pobj_id
+        	,ob_owner as owner_id
+        	,ob_id as pr_parent
+        from tb_object 
+        	where ob_id = #{objectId}
+    </select>
+    <resultMap id="ObjectResultTaskItemMap" type="Krobject" >
+    	<collection property="ob_results" javaType="ArrayList" column="krid" ofType="Kresult" select="selectKrTaskItemByObject"/>
+    	<collection property="ob_items" javaType="ArrayList" column="iid" ofType="Oitem" select="selectItemByObject"/>
+    	<collection property="ob_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByObject"/>
+    	<collection property="ob_parent_objects" javaType="Krobject" column="pobj_id" ofType="Krobject" select="selectParentObject"/>
+    	<collection property="ob_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+    	<collection property="ob_recent_pr" javaType="Tprogress" column="pr_parent" ofType="Tprogress" select="selectRecentProgress"/>
+    </resultMap>
+    	<select id="selectItemByObject" resultType="Oitem">
+	        select *
+	        from tb_item
+	        	where  CONCAT(',',item_parent_object,',') like #{iid} AND item_parent_kr is NULL
+	    </select>
+	    <select id="selectTaskByObject" resultMap="ParentTaskTaskResultMap">
+	        select *
+	        	,task_id as tid
+	        	,departmentOaName as task_dept_name
+	        	,employeeName as task_owner_name
+	        	,task_id as prid
+	        from tb_task
+	        left join tb_user on tb_user.id = task_owner
+	        left join tb_department on tb_department.id = deptId
+	        	where  task_parent_object like #{tid} AND task_parent_kr is NULL AND task_parent_task is NULL
+	    </select>
+	    
+    	<select id="selectKrTaskItemByObject" resultMap="ParentKrTaskResultMap">
+	        select *
+	        	,kr_owner as owner_id 
+	        	,kr_id as tid 
+	        	,kr_id as iid
+	        	,kr_id as pr_parent
+				,(
+					select pr_status
+					from tb_progress
+					where kr_id = pr_parent and pr_parent_type =1 and pr_status is not Null
+					order by tb_progress.created_at DESC
+					limit 1
+				)as kr_completion_status
+	        from tb_kr 
+	        	where kr_parent_object = #{krid}
+	        ORDER BY kr_order ASC
+	    </select>
+	    <resultMap id="ParentKrTaskResultMap" type="com.apis.okre.entity.Kresult" >
+	    	<collection property="kr_owners" javaType="User" column="owner_id" ofType="User" select="selectOwnerUser"/>
+	    	<collection property="kr_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByKr"/>
+	    	<collection property="kr_items" javaType="ArrayList" column="iid" ofType="Oitem" select="selectItemByKr"/>
+	    	<collection property="kr_recent_pr" javaType="Tprogress" column="pr_parent" ofType="Tprogress" select="selectRecentProgressKR"/>
+	    </resultMap>
+	       
+	    	<select id="selectItemByKr" resultType="Oitem">
+		        select * 
+		        from tb_item 
+		        	where item_parent_kr = #{iid}
+	    	</select>
+	    	
+	    	<select id="selectTaskByKr" resultMap="ParentTaskTaskResultMap">
+		        select *,
+		        	task_id as tid 
+			        ,departmentOaName as task_dept_name
+			        ,employeeName as task_owner_name
+			        ,task_id as prid
+		        from tb_task
+		        left join tb_user on tb_user.id = task_owner
+		        left join tb_department on tb_department.id = deptId 
+		        	where task_parent_kr = #{tid}
+	    	</select>
+	    	<resultMap id="ParentTaskTaskResultMap" type="Otask" >
+		    	<collection property="task_tasks" javaType="ArrayList" column="tid" ofType="Otask" select="selectTaskByTask"/>
+		    	<collection property="task_progresses" javaType="ArrayList" column="prid" ofType="Tprogress" select="selectProgressByTask"/>
+		    </resultMap>
+		    	<select id="selectProgressByTask" resultType="Tprogress">
+			        select *
+			        from tb_progress 
+			        	where pr_parent_type = 2 AND pr_parent = #{prid}
+		    	</select>
+		    	<select id="selectTaskByTask" resultMap="ParentTaskTaskResultMap">
+			        select *,
+			        	task_id as tid 
+				        ,departmentOaName as task_dept_name
+				        ,employeeName as task_owner_name
+			        from tb_task
+			        left join tb_user on tb_user.id = task_owner
+			        left join tb_department on tb_department.id = deptId 
+			        	where task_parent_task = #{tid}
+		    	</select>
+		    	
+    <!--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@-->
+    
+    <insert id="addObject" useGeneratedKeys="true" keyProperty="ob_id">
+    
+   		<selectKey keyProperty="ob_id" resultType="long" order="BEFORE">
+  				SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+		
+        insert into tb_object
+        	<set>
+        		<if test="ob_id != null"> ob_id = #{ob_id}, </if>
+				<if test="ob_name != null"> ob_name = #{ob_name}, </if>
+				<if test="ob_owner != null"> ob_owner = #{ob_owner}, </if>
+				<if test="ob_creator != null"> ob_creator = #{ob_creator}, </if>
+				<if test="ob_cycle != null"> ob_cycle = #{ob_cycle}, </if>
+				<if test="ob_start_date != null"> ob_start_date = #{ob_start_date}, </if>
+				<if test="ob_end_date != null"> ob_end_date = #{ob_end_date}, </if>
+				<if test="ob_company_id != null"> ob_company_id = #{ob_company_id}, </if>
+				<if test="ob_parent_object != null"> ob_parent_object = #{ob_parent_object}, </if>
+				<if test="ob_parent_kr != null"> ob_parent_kr= #{ob_parent_kr}, </if>
+				<if test="ob_visible_type != null"> ob_visible_type = #{ob_visible_type}, </if>
+				<if test="ob_visible_range != null"> ob_visible_range = #{ob_visible_range}, </if>
+				<if test="ob_type != null"> ob_type = #{ob_type}, </if>
+				<if test="ob_type_department != null"> ob_type_department = #{ob_type_department}, </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_object 
+			<where>
+	        	<if test="ob_id != null">ob_id like #{ob_id} </if>
+				<if test="ob_name != null"> AND ob_name like #{ob_name} </if>
+				<if test="ob_owner != null"> AND ob_owner like #{ob_owner} </if>
+				<if test="ob_creator != null"> AND ob_creator like #{ob_creator} </if>
+				<if test="ob_cycle != null"> AND ob_cycle like #{ob_cycle} </if>
+				<if test="ob_start_date != null"> AND ob_start_date like #{ob_start_date} </if>
+				<if test="ob_end_date != null"> AND ob_end_date like #{ob_end_date} </if>
+				<if test="ob_company_id != null"> AND ob_company_id like #{ob_company_id} </if>
+				<if test="ob_parent_object != null"> AND ob_parent_object like #{ob_parent_object} </if>
+				<if test="ob_progress != null"> AND ob_progress like #{ob_progress} </if>
+				<if test="ob_auto_progress != null"> AND ob_auto_progress like #{ob_auto_progress} </if>
+				<if test="ob_visible_type != null"> AND ob_visible_type like #{ob_visible_type} </if>
+				<if test="ob_visible_range != null"> AND ob_visible_range like #{ob_visible_range} </if>
+				<if test="ob_participant != null"> AND ob_participant like #{ob_participant} </if>
+				<if test="ob_attention != null"> AND ob_attention like #{ob_attention} </if>
+	        </where>
+    </delete>
+    
+
+    <update id="updateObjectByField">
+       update tb_object
+       <if test="ob_progress == -1"> ,(select avg(kr_completion) as val from tb_kr where kr_parent_object =#{ob_id}) as avg_sel </if>
+       <if test="ob_progress == -2"> ,(select avg(ob_progress) as val from tb_object where ob_parent_object =#{ob_id}) as avg_sel </if>
+       <if test="ob_progress == -3"> ,(select avg(kr_score) as val from tb_kr where kr_parent_object =#{ob_id}) as avg_sel </if>
+       <set>
+			<if test="ob_name != null"> ob_name = #{ob_name}, </if>
+			<if test="ob_owner != null"> ob_owner = #{ob_owner}, </if>
+			<if test="ob_creator != null"> ob_creator = #{ob_creator}, </if>
+			<if test="ob_cycle != null"> ob_cycle = #{ob_cycle}, </if>
+			<if test="ob_start_date != null"> ob_start_date = #{ob_start_date}, </if>
+			<if test="ob_end_date != null"> ob_end_date = #{ob_end_date}, </if>
+			<if test="ob_company_id != null"> ob_company_id = #{ob_company_id}, </if>
+			
+			<if test="ob_parent_object != null"> 
+				<if test="ob_parent_object == 0">
+					ob_parent_object = NULL,	
+				</if>
+				<if test="ob_parent_object != 0">
+					ob_parent_object = #{ob_parent_object},	
+				</if> 
+			</if>
+			
+			<if test="ob_parent_kr != null"> 
+				<if test="ob_parent_kr == 0">
+					ob_parent_kr = NULL,	
+				</if>
+				<if test="ob_parent_kr != 0">
+					ob_parent_kr = #{ob_parent_kr},	
+				</if> 
+			</if>
+			 
+			<if test="ob_status != null"> ob_status = #{ob_status}, </if>
+			<if test="ob_progress != null and ob_progress>=0"> ob_progress = #{ob_progress}, </if>
+			<if test="ob_auto_progress != null"> ob_auto_progress = #{ob_auto_progress}, </if>
+			<if test="ob_type != null"> ob_type = #{ob_type}, </if>
+			<if test="ob_score != null"> ob_score = #{ob_score}, </if>
+			<if test="ob_visible_type != null"> ob_visible_type = #{ob_visible_type}, </if>
+			<if test="ob_visible_range != null"> ob_visible_range = #{ob_visible_range}, </if>
+			<if test="ob_type != null"> ob_type = #{ob_type}, </if>
+			<if test="ob_type_department != null"> ob_type_department = #{ob_type_department}, </if>
+			
+			<if test="ob_participant != null">
+					ob_participant = #{ob_participant},
+			</if>
+			
+			<if test="ob_attention != null">  ob_attention = #{ob_attention}, </if>
+			<if test="ob_mstatus != null"> ob_mstatus = #{ob_mstatus}, </if>
+			<if test="ob_progress == -1"> tb_object.ob_progress = avg_sel.val </if>
+			<if test="ob_progress == -2"> tb_object.ob_progress = avg_sel.val </if>
+			<if test="ob_progress == -3"> tb_object.ob_score = avg_sel.val </if>
+		</set>
+       <where>
+       		<if test="ob_id != null">
+       			ob_id = #{ob_id}
+       			<if test="ob_parent_object != null">
+       				 AND #{ob_id} not like #{ob_parent_object}
+       			</if>
+       		</if>
+       		
+       		<if test="ob_id == null">
+       			<if test="ob_parent_object != null">
+       				ob_parent_object = #{ob_parent_object}
+       			</if>
+       		</if>
+       		
+       		<if test="ob_progress == -1"> and ob_auto_progress = 1 </if>
+       		<if test="ob_progress == -2"> and ob_auto_progress = 2 </if>
+       </where>       		
+    </update>
+<!--
+or ( #{operator.user_role}='creator' or ob_creator=#{operator.id} or user_superior=#{operator.id} or CONCAT(',',ob_participant,',' ) like CONCAT('%,',#{operator.id},',%' ) or ob_owner=#{operator.id} or CONCAT(',',ob_attention,',' ) like CONCAT('%,',#{operator.id},',%' ) ) 
+ -->    
+</mapper>
+

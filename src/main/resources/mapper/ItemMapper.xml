@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.ItemMapper">
+    
+    <!--查询所有-->
+    <resultMap id="ParentTaskTaskResultMap" type="Oitem" >
+    	<collection property="item_parent_objects" javaType="ArrayList" column="oid" ofType="Krobject" select="selectObject"/>
+    	<collection property="item_tags" javaType="ArrayList" column="tagid" ofType="Tag" select="selectTag"/>
+    	<collection property="item_participants" javaType="ArrayList" column="pid" ofType="User" select="selectParticipantUser"/>
+    	<collection property="item_followerses" javaType="ArrayList" column="fid" ofType="User" select="selectAttentionUser"/>
+    	<collection property="item_files" javaType="ArrayList" column="fileid" ofType="TFile" select="selectFile"/>
+    	<collection property="item_milestones" javaType="ArrayList" column="msid" ofType="Milestone" select="selectMilestone"/>
+    	<collection property="item_tasks" javaType="ArrayList" column="taskid" ofType="Otask" select="selectTask"/>
+    </resultMap>
+    	<select id="selectTask" resultType="Otask">
+	        select *
+	        from tb_task
+	        where task_parent_item like #{taskid}
+    	</select>
+    	<select id="selectMilestone" resultType="Milestone">
+	        select *
+	        from tb_milestone
+	        where ms_parent_item like #{msid}
+    	</select>
+    	<select id="selectObject" resultType="Krobject">
+	        select *
+	        from tb_object
+	        where #{oid} like CONCAT('%,',ob_id,',%')
+    	</select>
+    	<select id="selectTag" resultType="Tag">
+	        select *
+	        from tb_tag
+	        where #{tagid} like CONCAT('%,',tag_id,',%')
+    	</select>
+    	<select id="selectParticipantUser" resultType="User">
+	        select id,employeeName,deptId from tb_user 
+	        	where #{pid} like CONCAT('%,',id,',%') 
+	    </select>
+	    <select id="selectAttentionUser" resultType="User">
+	        select id,employeeName,deptId from tb_user 
+	        	where #{fid} like CONCAT('%,',id,',%') 
+	    </select>
+	    <select id="selectFile" resultType="TFile">
+	        select *
+	        from tb_file
+	        where  #{fileid} like CONCAT('%,',file_id,',%')
+    	</select>
+    	
+    <select id="selectItemByFields" resultMap="ParentTaskTaskResultMap">
+    
+        select tb_item1.*, CONCAT(sum(if(task_status=1,1,0)),'/',count(task_id)) as item_task_status 
+        	,CONCAT(',',item_parent_object,',') as oid
+        	,CONCAT(',',item_tag,',') as tagid
+        	,CONCAT(',',item_participant,',') as pid
+        	,CONCAT(',',item_followers,',') as fid
+			, CONCAT(',',item_uploaded_file,',') as fileid
+			, item_id as msid
+			, item_id as taskid
+        from (
+        		select tb_item.* , CONCAT(dp_serial_id,'.',tb_department.id) as dp_serial
+        		,(
+				select group_concat(distinct(tb_task.task_owner)) as test
+				from tb_task
+				where tb_task.task_parent_item = tb_item.item_id
+				group by task_parent_item
+				) as task_owners
+				,(
+				select group_concat(distinct(tb_milestone.ms_owner)) as test
+				from tb_milestone
+				where tb_milestone.ms_parent_item = tb_item.item_id
+				group by ms_parent_item
+				) as ms_owners
+        			
+        			from tb_item
+        		left join tb_user on item_owner = tb_user.id
+        		left join tb_department on tb_department.id = deptId
+        		<if test="dp_serial != null">	
+        			where CONCAT(dp_serial_id,'.',tb_department.id,'.') like #{dp_serial}	
+        		</if>
+        	)as tb_item1
+        	left join tb_task on item_id = task_parent_item
+		
+        	<where>
+        		(	
+        			item_visible_range = 0
+        			or CONCAT(',',item_owner,',') regexp CONCAT(',',#{item_operator.id},',')
+        			or CONCAT(',',item_participant,',') regexp CONCAT(',',#{item_operator.id},',')
+        			or CONCAT(',',item_followers,',') regexp CONCAT(',',#{item_operator.id},',')
+        			or #{item_operator.user_role} like 'creator'
+        		)
+        		AND item_mstatus = 0
+				<if test="item_id != null"> AND item_id like #{item_id}	</if>
+				<if test="item_name != null"> AND item_name like #{item_name} </if>
+				<if test="item_start_date != null">	AND item_start_date like #{item_start_date}	</if>
+				<if test="item_end_date != null">AND item_end_date like #{item_end_date}</if>
+				<if test="item_owner != null">AND item_owner like #{item_owner}</if>
+				<if test="item_participant != null">AND CONCAT(',',item_participant,',') like #{item_participant}</if>
+				<if test="item_followers != null">AND CONCAT(',',item_followers,',') like #{item_followers}</if>
+				<if test="item_approver != null">AND item_approver like #{item_approver}</if>
+				<if test="item_description != null">AND item_description like #{item_description}</if>
+				<if test="item_visible_range != null">AND item_visible_range like #{item_visible_range}</if>
+				<if test="item_company_id != null">AND item_company_id like #{item_company_id}</if>
+				<if test="item_tag != null">AND item_tag like #{item_tag}</if>
+				<if test="item_parent_object != null">AND CONCAT(',',item_parent_object,',') like #{item_parent_object}</if>
+				<if test="item_parent_kr != null">AND item_parent_kr like #{item_parent_kr}</if>
+				<if test="item_uploaded_file != null">AND item_uploaded_file like #{item_uploaded_file}</if>
+				<if test="item_recents != null">AND item_id in
+				  <foreach item="item" index="index" collection="item_recents.split(',')"
+				      open="(" separator="," close=")">
+				        #{item}
+				  </foreach> 
+				</if>
+				<if test="item_participant != null">
+					<if test="item_owner != null">
+						 OR (CONCAT(',',item_participant,',') like #{item_participant} OR item_owner like #{item_owner})
+					</if>	 
+				</if>
+		  	</where>
+		  	group by item_id
+		  	
+		  	<if test="item_recents != null">ORDER BY FIELD (item_id,
+			  <foreach item="item" index="index" collection="item_recents.split(',')"
+			      open="" separator="," close="">
+			        #{item}
+			  </foreach>
+			  ) 
+			</if>
+			
+    </select>
+    
+    <insert id="addItem" useGeneratedKeys="true" keyProperty="item_id">
+		<selectKey keyProperty="item_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_item 
+        	<set>
+        		<if test="item_id != null"> item_id = #{item_id}, </if>
+				<if test="item_name != null"> item_name = #{item_name}, </if>
+				<if test="item_start_date != null"> item_start_date = #{item_start_date}, </if>
+				<if test="item_end_date != null">
+					<if test="item_end_date == 'null'">
+						item_end_date = NULL, 
+					</if> 
+					<if test="item_end_date != 'null'">
+						item_end_date = #{item_end_date}, 
+					</if>
+					
+				</if>
+				<if test="item_owner != null"> item_owner = #{item_owner}, </if>
+				<if test="item_parent_object != null"> item_parent_object = #{item_parent_object}, </if>
+				<if test="item_parent_kr != null"> item_parent_kr = #{item_parent_kr}, </if>
+				<if test="item_participant != null"> item_participant = #{item_participant}, </if>
+				<if test="item_followers != null"> item_followers = #{item_followers}, </if>
+				<if test="item_approver != null"> item_approver = #{item_approver}, </if>
+				<if test="item_description != null"> item_description = #{item_description}, </if>
+				<if test="item_progress != null"> item_progress = #{item_progress}, </if>
+				<if test="item_visible_range != null"> item_visible_range = #{item_visible_range}, </if>
+				<if test="item_company_id != null"> item_company_id = #{item_company_id}, </if>
+				<if test="item_tag != null"> item_tag = #{item_tag}, </if>
+				<if test="item_uploaded_file != null"> item_uploaded_file = #{item_uploaded_file} </if>
+        	</set>
+    </insert>
+    
+    <delete id="deleteItemByFields">
+       delete from tb_item 
+			<where>
+				<if test="item_id != null">	item_id like #{item_id}	</if>
+				<if test="item_name != null"> AND item_name like #{item_name} </if>
+				<if test="item_start_date != null">	AND item_start_date like #{item_start_date}	</if>
+				<if test="item_end_date != null">AND item_end_date like #{item_end_date}</if>
+				<if test="item_owner != null">AND item_owner like #{item_owner}</if>
+				<if test="item_participant != null">AND CONCAT(',',item_participant,',') like #{item_participant}</if>
+				<if test="item_followers != null">AND CONCAT(',',item_followers,',') like #{item_followers}</if>
+				<if test="item_approver != null">AND item_approver like #{item_approver}</if>
+				<if test="item_description != null">AND item_description like #{item_description}</if>
+				<if test="item_visible_range != null">AND item_visible_range like #{item_visible_range}</if>
+				<if test="item_company_id != null">AND item_company_id like #{item_company_id}</if>
+				<if test="item_parent_object != null">AND CONCAT(',',item_parent_object,',') like #{item_parent_object}</if>
+				<if test="item_parent_kr != null">AND item_parent_kr like #{item_parent_kr}</if>
+				<if test="item_tag != null">AND item_tag like #{item_tag}</if>
+				<if test="item_uploaded_file != null">AND item_uploaded_file like #{item_uploaded_file}</if>
+		  	</where>
+    </delete>
+    
+    <update id="updateItem">
+       update tb_item
+	       <set>
+				<if test="item_name != null"> item_name = #{item_name}, </if>
+				<if test="item_status != null"> 
+					item_status = #{item_status},
+					<if test="item_status == 1">
+						item_progress = 100,
+					</if>
+				</if>
+				<if test="item_mstatus != null"> item_mstatus = #{item_mstatus}, </if>
+				<if test="item_start_date != null"> item_start_date = #{item_start_date}, </if>
+				<if test="item_end_date != null"> item_end_date = #{item_end_date}, </if>
+				<if test="item_owner != null"> item_owner = #{item_owner}, </if>
+				<if test="item_participant != null"> item_participant = #{item_participant}, </if>
+				<if test="item_followers != null"> item_followers = #{item_followers}, </if>
+				<if test="item_approver != null"> item_approver = #{item_approver}, </if>
+				<if test="item_description != null"> item_description = #{item_description}, </if>
+				<if test="item_progress != null"> item_progress = #{item_progress}, </if>
+				<if test="item_visible_range != null"> item_visible_range = #{item_visible_range}, </if>
+				<if test="item_company_id != null"> item_company_id = #{item_company_id}, </if>
+				<if test="item_tag != null"> item_tag = #{item_tag}, </if>
+				
+				<if test="item_parent_object != null">
+					<if test="!item_parent_object.contains('null')">
+						item_parent_object = #{item_parent_object},
+					</if>
+					<if test="item_parent_object.contains('null')">
+						item_parent_object = NULL,
+					</if>
+				</if>
+				<if test="item_parent_kr != null"> 
+					<if test="item_parent_kr != 0">
+						item_parent_kr = #{item_parent_kr},
+					</if>
+					<if test="item_parent_kr == 0">
+						item_parent_kr = NULL,
+					</if>
+				</if>
+				<if test="item_uploaded_file != null"> item_uploaded_file = #{item_uploaded_file} </if>
+		   </set>
+       where item_id = #{item_id}
+    </update>
+    
+</mapper>

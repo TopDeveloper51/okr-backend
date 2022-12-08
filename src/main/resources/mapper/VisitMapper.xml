@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.apis.okre.mapper.VisitMapper">
+    
+    <!--查询所有-->
+    <select id="selectByFields" resultType="Visit">
+        select * from tb_visit
+        	<where>
+				<if test="vs_id != null"> vs_id like #{vs_id} </if>
+				<if test="vs_visitor != null"> AND vs_visitor like #{vs_visitor} </if>
+				<if test="vs_description != null"> AND vs_description like #{vs_description} </if>
+				<if test="vs_target_type != null"> AND vs_target_type like #{vs_target_type} </if>
+				<if test="vs_target != null"> AND vs_target like #{vs_target} </if>
+				<if test="vs_counts != null"> AND vs_counts like #{vs_counts} </if>
+		  	</where>
+    </select>
+    
+    <insert id="addOne" useGeneratedKeys="true" keyProperty="vs_id">
+		<selectKey keyProperty="vs_id" resultType="long" order="BEFORE">
+		    SELECT CAST(rand()*1000000000 as UNSIGNED)
+		</selectKey>
+        insert into tb_visit
+        	<set>
+        		<if test="vs_id != null"> vs_id = #{vs_id}, </if>
+				<if test="vs_visitor != null"> vs_visitor = #{vs_visitor}, </if>
+				<if test="vs_description != null"> vs_description = #{vs_description}, </if>
+				<if test="vs_target_type != null"> vs_target_type = #{vs_target_type}, </if>
+				<if test="vs_target != null"> vs_target = #{vs_target}, </if>
+				<if test="vs_counts != null"> vs_counts = #{vs_counts} </if>
+		   </set>
+    </insert>
+    
+    <delete id="deleteByFields">
+       delete from tb_visit 
+			<where>
+				<if test="vs_id != null"> vs_id like #{vs_id} </if>
+				<if test="vs_visitor != null"> AND vs_visitor like #{vs_visitor} </if>
+				<if test="vs_description != null"> AND vs_description like #{vs_description} </if>
+				<if test="vs_target_type != null"> AND vs_target_type like #{vs_target_type} </if>
+				<if test="vs_target != null"> AND vs_target like #{vs_target} </if>
+				<if test="vs_counts != null"> AND vs_counts like #{vs_counts} </if>
+			</where>
+    </delete>
+    
+    <update id="updateByFields">
+       update tb_visit
+       	set vs_counts = vs_counts + 1
+	     <where>
+			<if test="vs_id != null"> vs_id like #{vs_id} </if>
+			<if test="vs_visitor != null"> AND vs_visitor like #{vs_visitor} </if>
+			<if test="vs_target_type != null"> AND vs_target_type like #{vs_target_type} </if>
+			<if test="vs_target != null"> AND vs_target like #{vs_target} </if>
+		</where>
+    </update>
+    
+</mapper>
